@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include <Eigen/Core>
 
 #ifndef KINECT_FUSION_VOXELGRID_H
 #define KINECT_FUSION_VOXELGRID_H
@@ -7,17 +7,24 @@
 class VoxelGrid
 {
 public:
-    VoxelGrid(uint16_t width, uint16_t height, uint16_t depth);
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    VoxelGrid(Eigen::Vector3i resolution, Eigen::Vector3d size, Eigen::Vector3d offset);
     ~VoxelGrid ();
 
-    int8_t getValue(uint16_t x, uint16_t y, uint16_t z);
-    void setValue(uint16_t x, uint16_t y, uint16_t z, int8_t value);
-private:
-	unsigned int width;
-	unsigned int height;
-	unsigned int depth;
+	float getValue(unsigned int x, unsigned int y, unsigned int z);
+	void setValue(unsigned int x, unsigned int y, unsigned int z, float value);
 
-	int8_t *voxelData;
+	float getValueAtPoint(Eigen::Vector3d point);
+
+	float getWeight(unsigned int x, unsigned int y, unsigned int z);
+	void setWeight(unsigned int x, unsigned int y, unsigned int z, float value);
+private:
+	Eigen::Vector3i resolution;
+	Eigen::Vector3d size;
+	Eigen::Vector3d offset;
+
+	float *voxelData;
+	float *weightData;
 };
 
 
