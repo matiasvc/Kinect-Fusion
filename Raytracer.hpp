@@ -1,5 +1,4 @@
-
-#include <Eigen/Eigen>
+#include <Eigen/Core>
 
 #include "VoxelGrid.hpp"
 
