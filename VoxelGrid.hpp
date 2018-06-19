@@ -16,15 +16,12 @@ public:
 
 	float getValueAtPoint(Eigen::Vector3d point);
 
-	float getWeight(unsigned int x, unsigned int y, unsigned int z);
-	void setWeight(unsigned int x, unsigned int y, unsigned int z, float value);
 private:
 	Eigen::Vector3i resolution;
 	Eigen::Vector3d size;
 	Eigen::Vector3d offset;
 
 	float *voxelData;
-	float *weightData;
 };
 
 
