@@ -14,19 +14,23 @@ public:
 	float getValue(unsigned int x, unsigned int y, unsigned int z);
 	void setValue(unsigned int x, unsigned int y, unsigned int z, float value);
 
+	Eigen::Vector3d getPointAtIndex(Eigen::Vector3i index);
 	float getValueAtPoint(Eigen::Vector3d point);
 
-	friend VoxelGrid& operator+(const VoxelGrid&, const VoxelGrid&);
-	friend VoxelGrid& operator*(const VoxelGrid&, const VoxelGrid&);
-	friend VoxelGrid& operator/(const VoxelGrid&, const VoxelGrid&);
+    //todo: return reference?
+	VoxelGrid operator+ (const VoxelGrid&);
+	VoxelGrid operator* (const VoxelGrid&);
+	VoxelGrid operator/ (const VoxelGrid&);
 
 private:
 	Eigen::Vector3i resolution;
 	Eigen::Vector3d size;
 	Eigen::Vector3d offset;
 
+    int numElements;
 	float *voxelData;
 };
+
 
 
 #endif //KINECT_FUSION_VOXELGRID_H

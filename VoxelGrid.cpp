@@ -3,7 +3,8 @@
 VoxelGrid::VoxelGrid(Eigen::Vector3i resolution, Eigen::Vector3d size, Eigen::Vector3d offset)
 : resolution(resolution), size(size), offset(offset)
 {
-	voxelData = new float[resolution.x ()*resolution.y ()*resolution.z ()];
+    numElements = resolution.x ()*resolution.y ()*resolution.z ();
+	voxelData = new float[numElements];
 }
 
 VoxelGrid::~VoxelGrid ()
@@ -21,6 +22,12 @@ void VoxelGrid::setValue (unsigned int x, unsigned int y, unsigned int z, float 
 {
 	if (x < resolution.x() and y < resolution.y() and z < resolution.z()) { return; }
 	voxelData[x + y*resolution.y() + z*resolution.y()*resolution.z()] = value;
+}
+
+Eigen::Vector3d VoxelGrid::getPointAtIndex(Eigen::Vector3i index){
+	Eigen::Vector3d point( double(index.x()) *size.x(), double(index.y()) *size.y(), double(index.z()) *size.z());
+    point += offset;
+	return point;
 }
 
 float VoxelGrid::getValueAtPoint (Eigen::Vector3d point)
@@ -63,44 +70,30 @@ float VoxelGrid::getValueAtPoint (Eigen::Vector3d point)
 	return c;
 }
 
-float VoxelGrid::getWeight (unsigned int x, unsigned int y, unsigned int z)
+VoxelGrid VoxelGrid::operator+ (const VoxelGrid &rhs)
 {
-	if (x < resolution.x() and y < resolution.y() and z < resolution.z()) { return 0.0f; }
-	return weightData[x + y*resolution.y() + z*resolution.y()*resolution.z()];
+    VoxelGrid summed = VoxelGrid(resolution, size, offset);
+    for(int i=0; i<numElements; ++i){
+        summed.voxelData[i] = voxelData[i] + rhs.voxelData[i];
+    }
+    return summed;
 }
 
-void VoxelGrid::setWeight (unsigned int x, unsigned int y, unsigned int z, float value)
+VoxelGrid VoxelGrid::operator*(const VoxelGrid & rhs)
 {
-	if (x < resolution.x() and y < resolution.y() and z < resolution.z()) { return; }
-	weightData[x + y*resolution.y() + z*resolution.y()*resolution.z()] = value;
+    VoxelGrid elemProd = VoxelGrid(resolution, size, offset);
+    for(int i=0; i<numElements; ++i){
+        elemProd.voxelData[i] = voxelData[i] * rhs.voxelData[i];
+    }
+    return elemProd;
 }
 
-VoxelGrid& VoxelGrid::operator+(const VoxelGrid & a, const VoxelGrid & b)
+VoxelGrid VoxelGrid::operator/(const VoxelGrid & rhs)
 {
-	VoxelGrid summed = VoxelGrid(resolution, size, offset);
-	numElems = resolution.x ()*resolution.y ()*resolution.z ();
-	for(int i=0; i<numElems; ++i){
-		summed[i] = a[i] + b[i];
-	}
-	return summed;
+    VoxelGrid elemDiv = VoxelGrid(resolution, size, offset);
+    for(int i=0; i<numElements; ++i){
+        elemDiv.voxelData[i] = voxelData[i] / rhs.voxelData[i];
+    }
+    return elemDiv;
 }
 
-VoxelGrid& VoxelGrid::operator*(const VoxelGrid &, const VoxelGrid &)
-{
-	VoxelGrid elemProd = VoxelGrid(resolution, size, offset);
-	numElems = resolution.x ()*resolution.y ()*resolution.z ();
-	for(int i=0; i<numElems; ++i){
-		elemProd[i] = a[i] * b[i];
-	}
-	return elemProd;
-}
-
-VoxelGrid& VoxelGrid::operator*(const VoxelGrid &, const VoxelGrid &)
-{
-	VoxelGrid elemDiv = VoxelGrid(resolution, size, offset);
-	numElems = resolution.x ()*resolution.y ()*resolution.z ();
-	for(int i=0; i<numElems; ++i){
-		elemDiv[i] = a[i] / b[i];
-	}
-	return elemDiv;
-}
