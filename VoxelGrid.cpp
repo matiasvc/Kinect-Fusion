@@ -4,7 +4,6 @@ VoxelGrid::VoxelGrid(Eigen::Vector3i resolution, Eigen::Vector3d size, Eigen::Ve
 : resolution(resolution), size(size), offset(offset)
 {
 	voxelData = new float[resolution.x ()*resolution.y ()*resolution.z ()];
-	weightData = new float[resolution.x ()*resolution.y ()*resolution.z ()];
 }
 
 VoxelGrid::~VoxelGrid ()
