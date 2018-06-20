@@ -41,7 +41,11 @@ void ModelReconstructor::fuseFrame(Eigen::MatrixXd depthMap, Eigen::Matrix4d &ca
 {
     VoxelGrid weights_local = calculate_weights_local(depthMap, cameraPose);
     VoxelGrid TSDF_local = calculate_TSDF_local(depthMap, cameraPose);
+
     //todo: update global TSDF and weights using a running average
+    _TSDF_global = _weights_global*_TSDF_global + weights_local*TSDF_local;
+    _weights_global = _weights_global + weights_local;
+    _TSDF_global = _TSDF_global / _weights_global;
 }
 
 

@@ -16,6 +16,10 @@ public:
 
 	float getValueAtPoint(Eigen::Vector3d point);
 
+	friend VoxelGrid& operator+(const VoxelGrid&, const VoxelGrid&);
+	friend VoxelGrid& operator*(const VoxelGrid&, const VoxelGrid&);
+	friend VoxelGrid& operator/(const VoxelGrid&, const VoxelGrid&);
+
 private:
 	Eigen::Vector3i resolution;
 	Eigen::Vector3d size;

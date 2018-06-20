@@ -41,3 +41,32 @@ void VoxelGrid::setWeight (unsigned int x, unsigned int y, unsigned int z, float
 	weightData[x + y*resolution.y() + z*resolution.y()*resolution.z()] = value;
 }
 
+VoxelGrid& VoxelGrid::operator+(const VoxelGrid & a, const VoxelGrid & b)
+{
+	VoxelGrid summed = VoxelGrid(resolution, size, offset);
+	numElems = resolution.x ()*resolution.y ()*resolution.z ();
+	for(int i=0; i<numElems; ++i){
+		summed[i] = a[i] + b[i];
+	}
+	return summed;
+}
+
+VoxelGrid& VoxelGrid::operator*(const VoxelGrid &, const VoxelGrid &)
+{
+	VoxelGrid elemProd = VoxelGrid(resolution, size, offset);
+	numElems = resolution.x ()*resolution.y ()*resolution.z ();
+	for(int i=0; i<numElems; ++i){
+		elemProd[i] = a[i] * b[i];
+	}
+	return elemProd;
+}
+
+VoxelGrid& VoxelGrid::operator*(const VoxelGrid &, const VoxelGrid &)
+{
+	VoxelGrid elemDiv = VoxelGrid(resolution, size, offset);
+	numElems = resolution.x ()*resolution.y ()*resolution.z ();
+	for(int i=0; i<numElems; ++i){
+		elemDiv[i] = a[i] / b[i];
+	}
+	return elemDiv;
+}
