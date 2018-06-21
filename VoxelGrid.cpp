@@ -14,13 +14,13 @@ VoxelGrid::~VoxelGrid ()
 
 float VoxelGrid::getValue (unsigned int x, unsigned int y, unsigned int z)
 {
-	if (x < resolution.x() and y < resolution.y() and z < resolution.z()) { return 0.0f; }
+	if (x >= resolution.x() and y >= resolution.y() and z >= resolution.z()) { return 0.0f; }
 	return voxelData[x + y*resolution.y() + z*resolution.y()*resolution.z()];
 }
 
 void VoxelGrid::setValue (unsigned int x, unsigned int y, unsigned int z, float value)
 {
-	if (x < resolution.x() and y < resolution.y() and z < resolution.z()) { return; }
+	if (x >= resolution.x() and y >= resolution.y() and z >= resolution.z()) { return; }
 	voxelData[x + y*resolution.y() + z*resolution.y()*resolution.z()] = value;
 }
 
@@ -68,6 +68,12 @@ float VoxelGrid::getValueAtPoint (Eigen::Vector3d point)
 	float c = c0*(1 - zd) + c1*zd;
 
 	return c;
+}
+
+void VoxelGrid::setAllValues(float val) {
+	for (int i=0; i<numElements; ++i){
+		voxelData[i] = val;
+	}
 }
 
 VoxelGrid VoxelGrid::operator+ (const VoxelGrid &rhs)

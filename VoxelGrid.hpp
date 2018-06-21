@@ -16,6 +16,7 @@ public:
 
 	Eigen::Vector3d getPointAtIndex(Eigen::Vector3i index);
 	float getValueAtPoint(Eigen::Vector3d point);
+	void setAllValues(float);
 
     //todo: return reference?
 	VoxelGrid operator+ (const VoxelGrid&);

@@ -20,24 +20,22 @@ public:
 
     void fuseFrame(Eigen::MatrixXd depthMap, Eigen::Matrix4d& cameraPose);
 
-    VoxelGrid getModel();  //reference?
+    VoxelGrid* getModel();  //reference?
 
 private:
-    VoxelGrid _TSDF_global;
-    VoxelGrid _weights_global;
+    VoxelGrid *_TSDF_global_ref;
+    VoxelGrid *_weights_global_ref;
 
-    int _numPoints;
-
-    double _truncationDistance;
+    float _truncationDistance;
 
     Eigen::Matrix3d _cameraIntrinsic;
     Eigen::Vector3i _resolution;
     Eigen::Vector3d _size;
     Eigen::Vector3d _offset;
 
-    VoxelGrid get_empty_voxelGrid();
-    VoxelGrid& calculate_TSDF_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d& cameraPose);
-    VoxelGrid& calculate_weights_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d& cameraPose); //needs surface normal map
+    VoxelGrid* get_empty_voxelGrid();
+    VoxelGrid* calculate_TSDF_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d& cameraPose);
+    VoxelGrid* calculate_weights_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d& cameraPose); //needs surface normal map
 };
 
 #endif //KINECT_FUSION_TSDF_H
