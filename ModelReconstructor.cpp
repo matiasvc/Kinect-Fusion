@@ -2,17 +2,17 @@
 // Created by opeide on 14.06.18.
 //
 
-#include <algorithm>
+
 #include "ModelReconstructor.hpp"
 
 
-ModelReconstructor::ModelReconstructor(double truncationDistance,
+ModelReconstructor::ModelReconstructor(float truncationDistance,
                                        Eigen::Vector3i resolution,
                                        Eigen::Vector3d size,
                                        Eigen::Vector3d offset,
                                        Eigen::Matrix3d cameraIntrinsic)
-:   _TSDF_global_ref(new VoxelGrid(resolution, size, offset)),
-    _weights_global_ref(new VoxelGrid(resolution, size, offset))
+:   _TSDF_global(new VoxelGrid(resolution, size, offset)),
+    _weights_global(new VoxelGrid(resolution, size, offset))
 {
     _truncationDistance = truncationDistance;
     _resolution = resolution;
@@ -20,24 +20,38 @@ ModelReconstructor::ModelReconstructor(double truncationDistance,
     _offset = offset;
     _cameraIntrinsic = cameraIntrinsic;
 
-    _weights_global_ref->setAllValues(1);
+    _weights_global->setAllValues(1.0);
 }
 
-VoxelGrid *ModelReconstructor::get_empty_voxelGrid()
+VoxelGrid ModelReconstructor::get_empty_voxelGrid()
 {
-    VoxelGrid *emptyGrid = new VoxelGrid(_resolution, _size, _offset);
+    VoxelGrid emptyGrid = VoxelGrid(_resolution, _size, _offset);
     return emptyGrid;
 }
 
 VoxelGrid *ModelReconstructor::getModel()
 {
-    return _TSDF_global_ref;
+    return _TSDF_global;
 }
 
+
+void ModelReconstructor::printTSDF() {
+    for (unsigned int x = 0; x < 4; ++x) {
+        for(unsigned int y = 0; y < 4; ++y){
+            for (unsigned int z = 0; z < 4; ++z){
+                std::cout << _TSDF_global->getValue(x, y, z) << " ";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
+    }
+}
+
+
 //Loop over every world point and calculate a truncated signed distance value (TSDF)
-VoxelGrid* ModelReconstructor::calculate_TSDF_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d &cameraPose)
+VoxelGrid ModelReconstructor::calculate_TSDF_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d &cameraPose)
 {
-    VoxelGrid* TSDF_local = get_empty_voxelGrid();
+    VoxelGrid TSDF_local = get_empty_voxelGrid();
 //    for (int xi=0; xi<_resolution.x(); ++xi){
 //        for (int yi=0; yi<_resolution.z(); ++yi){
 //            for (int zi=0; zi<_resolution.z(); ++zi){
@@ -69,29 +83,30 @@ VoxelGrid* ModelReconstructor::calculate_TSDF_local(Eigen::MatrixXd depthMap, Ei
 //            }
 //        }
 //    }
-    TSDF_local->setAllValues(5.0);
+    TSDF_local.setAllValues(5.0);
     return TSDF_local;
 }
 
 //requires normalmap
-VoxelGrid* ModelReconstructor::calculate_weights_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d &cameraPose)
+VoxelGrid ModelReconstructor::calculate_weights_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d &cameraPose)
 {
-    VoxelGrid* weights_local = get_empty_voxelGrid();
-    weights_local->setAllValues(1.0);
+    VoxelGrid weights_local = get_empty_voxelGrid();
+    weights_local.setAllValues(1.0);
     return weights_local;
 }
 
 void ModelReconstructor::fuseFrame(Eigen::MatrixXd depthMap, Eigen::Matrix4d &cameraPose)
 {
-    //VoxelGrid weights_local = calculate_weights_local(depthMap, cameraPose);
-    VoxelGrid* TSDF_local_ref = calculate_TSDF_local(depthMap, cameraPose);
+    std::cout << "Fusing Frame... " << std::endl;
 
-    //todo: update global TSDF and weights using a running average
-//    _TSDF_global_ref = _weights_global_ref*_TSDF_global_ref + weights_local*TSDF_local;
-//    _weights_global_ref = _weights_global_ref + weights_local;
-//    _TSDF_global_ref = _TSDF_global_ref / _weights_global_ref;
-    _TSDF_global_ref = TSDF_local_ref;
+    VoxelGrid weights_local = calculate_weights_local(depthMap, cameraPose);
+    VoxelGrid TSDF_local = calculate_TSDF_local(depthMap, cameraPose);
+
+    //update global TSDF and weights using a running average
+    *_TSDF_global = (*_weights_global)*(*_TSDF_global) + weights_local*TSDF_local;
+    *_weights_global = (*_weights_global) + weights_local;
+    *_TSDF_global = (*_TSDF_global) / (*_weights_global);
+
+    std::cout << "Frame Fused!" << std::endl;
 }
-
-
 

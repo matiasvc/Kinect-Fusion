@@ -76,6 +76,12 @@ void VoxelGrid::setAllValues(float val) {
 	}
 }
 
+void VoxelGrid::operator= (const VoxelGrid& rhs){
+    for(int i=0; i<numElements; ++i){
+        voxelData[i] = rhs.voxelData[i];
+    }
+}
+
 VoxelGrid VoxelGrid::operator+ (const VoxelGrid &rhs)
 {
     VoxelGrid summed = VoxelGrid(resolution, size, offset);
