@@ -3,6 +3,7 @@
 //
 
 #include <Eigen/Core>
+#include <Eigen/Dense>
 #include <iostream>
 #include <algorithm>
 
@@ -19,7 +20,8 @@ public:
                         Eigen::Vector3i resolution,
                         Eigen::Vector3d size,
                         Eigen::Vector3d offset,
-                        Eigen::Matrix3d cameraIntrinsic);
+                        Eigen::Matrix3d cameraIntrinsic,
+                        Eigen::Vector2i camResolution);
 
     void printTSDF();
 
@@ -37,6 +39,7 @@ private:
     Eigen::Vector3i _resolution;
     Eigen::Vector3d _size;
     Eigen::Vector3d _offset;
+    Eigen::Vector2i _camResolution;
 
     VoxelGrid get_empty_voxelGrid();
     VoxelGrid calculate_TSDF_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d& cameraPose);

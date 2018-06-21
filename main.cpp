@@ -7,11 +7,12 @@
 int main (int argc, char* argv[])
 {
 	Eigen::Vector3i resolution = Eigen::Vector3i::Ones () * 4;
-	Eigen::Vector3d size = Eigen::Vector3d::Ones () * 3.0;
+	Eigen::Vector3d size = Eigen::Vector3d::Ones () * 1.0;
 	Eigen::Vector3d offset = Eigen::Vector3d::Zero ();
 
-	float truncationDistance = 1.0;
+	float truncationDistance = 1;
 
+    Eigen::Vector2i camResolution(3,3);
 	double fx = 1;
 	double fy = 1;
 	double u0 = 1;
@@ -32,9 +33,10 @@ int main (int argc, char* argv[])
                     0,0,1,0,
                     0,0,0,1;
 
-    ModelReconstructor fuser(truncationDistance, resolution, size, offset, cameraIntrinsic);
+    ModelReconstructor fuser(truncationDistance, resolution, size, offset, cameraIntrinsic, camResolution);
     fuser.fuseFrame(depthMap, cameraPose);
     fuser.printTSDF();
+
 
     //VoxelGrid *model = fuser.getModel();
 
