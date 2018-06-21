@@ -30,6 +30,19 @@ Eigen::Vector3d VoxelGrid::getPointAtIndex(Eigen::Vector3i index){
 	return point;
 }
 
+void VoxelGrid::print() {
+    std::cout.precision(1);
+    for (unsigned int x = 0; x < resolution.x(); ++x) {
+        for(unsigned int y = 0; y < resolution.y(); ++y){
+            for (unsigned int z = 0; z < resolution.z(); ++z){
+                std::cout << getValue(x, y, z) << "   \t  \t";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
+    }
+}
+
 float VoxelGrid::getValueAtPoint (Eigen::Vector3d point)
 {
 	// Clamp point to within the voxel volume
@@ -104,7 +117,11 @@ VoxelGrid VoxelGrid::operator/(const VoxelGrid & rhs)
 {
     VoxelGrid elemDiv = VoxelGrid(resolution, size, offset);
     for(int i=0; i<numElements; ++i){
-        elemDiv.voxelData[i] = voxelData[i] / rhs.voxelData[i];
+        if (voxelData[i]==0 or rhs.voxelData[i]==0){
+            elemDiv.voxelData[i] = 0;
+        }else{
+            elemDiv.voxelData[i] = voxelData[i] / rhs.voxelData[i];
+        }
     }
     return elemDiv;
 }

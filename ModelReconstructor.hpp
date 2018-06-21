@@ -6,6 +6,7 @@
 #include <Eigen/Dense>
 #include <iostream>
 #include <algorithm>
+#include <tuple>
 
 #include "VoxelGrid.hpp"
 
@@ -25,7 +26,7 @@ public:
 
     void printTSDF();
 
-    void fuseFrame(Eigen::MatrixXd depthMap, Eigen::Matrix4d& cameraPose);
+    void fuseFrame(Eigen::MatrixXd depthMap, Eigen::Matrix4d cameraPose);
 
     VoxelGrid *getModel();  //reference?
 
@@ -42,8 +43,7 @@ private:
     Eigen::Vector2i _camResolution;
 
     VoxelGrid get_empty_voxelGrid();
-    VoxelGrid calculate_TSDF_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d& cameraPose);
-    VoxelGrid calculate_weights_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d& cameraPose); //needs surface normal map
+    void reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d cameraPose, VoxelGrid* TSDF, VoxelGrid* weight);
 };
 
 #endif //KINECT_FUSION_TSDF_H

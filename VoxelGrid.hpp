@@ -1,4 +1,5 @@
 #include <Eigen/Core>
+#include <iostream>
 
 #ifndef KINECT_FUSION_VOXELGRID_H
 #define KINECT_FUSION_VOXELGRID_H
@@ -19,11 +20,12 @@ public:
 	float getValueAtPoint(Eigen::Vector3d point);
 	void setAllValues(float);
 
-    //todo: return reference?
 	void operator= (const VoxelGrid&);
 	VoxelGrid operator+ (const VoxelGrid&);
 	VoxelGrid operator* (const VoxelGrid&);
 	VoxelGrid operator/ (const VoxelGrid&);
+
+	void print();
 
 private:
 	Eigen::Vector3i resolution;

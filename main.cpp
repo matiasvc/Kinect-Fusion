@@ -6,7 +6,7 @@
 
 int main (int argc, char* argv[])
 {
-	Eigen::Vector3i resolution = Eigen::Vector3i::Ones () * 4;
+	Eigen::Vector3i resolution = Eigen::Vector3i::Ones () * 17;
 	Eigen::Vector3d size = Eigen::Vector3d::Ones () * 1.0;
 	Eigen::Vector3d offset = Eigen::Vector3d::Zero ();
 
@@ -22,23 +22,20 @@ int main (int argc, char* argv[])
 						0, fy, v0,
 						0, 0, 1;
 
-    Eigen::Matrix3d depthMap;
-    depthMap <<     3,3,3,
-                    3,3,3,
-                    3,3,3;
+    Eigen::Matrix3d depthMap1 = Eigen::Matrix3d::Ones() * 6;
+    Eigen::Matrix3d depthMap2 = Eigen::Matrix3d::Ones() * 7;
 
-    Eigen::Matrix4d cameraPose;
-    cameraPose <<   1,0,0,0,
-                    0,1,0,0,
-                    0,0,1,0,
-                    0,0,0,1;
+    Eigen::Matrix4d cameraPose1 = Eigen::Matrix4d::Identity();
+    Eigen::Matrix4d cameraPose2 = Eigen::Matrix4d::Identity();
+    cameraPose2(1,3) = resolution.y();
+
 
     ModelReconstructor fuser(truncationDistance, resolution, size, offset, cameraIntrinsic, camResolution);
-    fuser.fuseFrame(depthMap, cameraPose);
+
+    fuser.fuseFrame(depthMap1, cameraPose1);
+    fuser.fuseFrame(depthMap2, cameraPose2);
     fuser.printTSDF();
 
-
-    //VoxelGrid *model = fuser.getModel();
 
 
 
