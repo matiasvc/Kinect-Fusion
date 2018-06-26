@@ -87,7 +87,7 @@ void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matr
                 double pointDepth = cameraPoint.z();
                 float TSDF_val = (float) depthMap(pixPoint.x(), pixPoint.y()) - (float) pointDepth;
 
-                //turncate SDF value
+                //truncate SDF value
                 if (TSDF_val >= -_truncationDistance){
                     TSDF_val = std::min(1.0f, fabsf(TSDF_val)/_truncationDistance)*copysignf(1.0f, TSDF_val);
                 }
