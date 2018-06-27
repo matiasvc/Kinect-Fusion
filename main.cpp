@@ -24,9 +24,9 @@ int main (int argc, char* argv[])
 
 
     //INIT TSDF
-    Eigen::Vector3i resolution = Eigen::Vector3i::Ones () * 100; //num voxels in each dimension of TSDF
+    Eigen::Vector3i resolution = Eigen::Vector3i::Ones () * 20; //num voxels in each dimension of TSDF
     Eigen::Vector3d size = Eigen::Vector3d::Ones () * 3.0;  //size of model in meters
-    Eigen::Vector3d offset(2,1,0);
+    Eigen::Vector3d offset(1,1,1); //camera pose is relative to this point
     float truncationDistance = 0.3;
     ModelReconstructor model(truncationDistance, resolution, size, offset, cameraIntrinsic, camResolution);
 
@@ -38,7 +38,7 @@ int main (int argc, char* argv[])
         Eigen::MatrixXd depthMap = depthMapf.cast<double>();
         Eigen::Matrix4d cameraPose = Eigen::Matrix4d::Identity();
         cameraPose = sensor.GetTrajectory().cast<double>();
-        //cameraPose.col(3) = Eigen::Vector4d::Ones();
+        cameraPose.col(3) = Eigen::Vector4d(0,0,0,1);
 
         //FUSE FRAME
         model.fuseFrame(depthMap,cameraPose);
@@ -48,26 +48,4 @@ int main (int argc, char* argv[])
 
     std::cout << "Exiting!" << std::endl;
     return 0;
-
-
-//	double fx = 1;
-//    double fy = 1;
-//    double u0 = 1;
-//    double v0 = 1;
-//    Eigen::Matrix3d cameraIntrinsic;
-//    cameraIntrinsic << 	fx, 0, u0,
-//						0, fy, v0,
-//						0, 0, 1;
-//
-//    Eigen::Vector2i camResolution(3,3);
-//    Eigen::Matrix3d depthMap1 = Eigen::Matrix3d::Ones() * 6;
-//    Eigen::Matrix3d depthMap2 = Eigen::Matrix3d::Ones() * 7;
-//
-//    Eigen::Matrix4d cameraPose1 = Eigen::Matrix4d::Identity();
-//    Eigen::Matrix4d cameraPose2 = Eigen::Matrix4d::Identity();
-//    cameraPose2(1,3) = resolution.y();
-
-
-
-
 }

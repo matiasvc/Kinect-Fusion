@@ -27,7 +27,7 @@ void VoxelGrid::setValue (unsigned int x, unsigned int y, unsigned int z, float 
 Eigen::Vector3d VoxelGrid::getPointAtIndex(Eigen::Vector3i index){
 	Eigen::Vector3d point = (index.cast<double>()).cwiseQuotient((resolution-Eigen::Vector3i::Ones()).cast<double>());
 	point = point.cwiseProduct(size);
-    point -= offset;
+    point -= offset; //todo: minus or plus
 	return point;
 }
 
