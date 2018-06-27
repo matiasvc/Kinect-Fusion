@@ -178,8 +178,6 @@ private:
 
 	bool ReadFileList(const std::string& filename, std::vector<std::string>& result, std::vector<double>& timestamps)
 	{
-        //todo:debug
-        std::cout << filename << std::endl;
 
 		std::ifstream fileDepthList(filename, std::ios::in);
 		if (!fileDepthList.is_open()) return false;

@@ -63,20 +63,28 @@ void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matr
         for (int yi=0; yi<_resolution.z(); ++yi){
             for (int zi=0; zi<_resolution.z(); ++zi){
                 Eigen::Vector3i voxelIndex(xi,yi,zi);
+
                 //convert voxel indexes to world coordinates
                 Eigen::Vector3d worldPoint = TSDF->getPointAtIndex(voxelIndex);
                 Eigen::Vector4d worldPointHomo;
                 worldPointHomo << worldPoint, 1;
 
-                //project model point to pix coords
+                //transform world point to cam coords
                 Eigen::Matrix4d cameraPoseInv = cameraPose.inverse();
                 Eigen::Vector4d cameraPointHomo = (cameraPoseInv * worldPointHomo);
                 Eigen::Vector3d cameraPoint = cameraPointHomo.head(3);
+                if(cameraPoint.z() <= 0){ //point behind camera
+                    TSDF->setValue(xi, yi, zi, 0.0f);
+                    weights->setValue(xi,yi,zi,0.0f);
+                    continue;
+                }
+
+                //Project point to pixel in depthmap
                 Eigen::Vector3d pixPointHomo = _cameraIntrinsic * cameraPoint;
                 Eigen::Vector2i pixPoint;
                 pixPoint << pixPointHomo.x()/pixPointHomo.z(), pixPointHomo.y()/pixPointHomo.z();
 
-                //if point not in view
+                //if pix outisde depthmap
                 if (bool(((pixPoint-_camResolution).array() >= 0).any()) or bool(((pixPoint).array() < 0).any())){
                     TSDF->setValue(xi, yi, zi, 0.0f);
                     weights->setValue(xi,yi,zi,0.0f);
@@ -85,7 +93,7 @@ void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matr
 
                 //calc SDF value.
                 double pointDepth = cameraPoint.z();
-                float TSDF_val = (float) depthMap(pixPoint.x(), pixPoint.y()) - (float) pointDepth;
+                float TSDF_val = (float) depthMap(pixPoint.y(), pixPoint.x()) - (float) pointDepth;
 
                 //truncate SDF value
                 if (TSDF_val >= -_truncationDistance){
@@ -95,7 +103,6 @@ void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matr
                     TSDF_val = 0.0f;
                     weights->setValue(xi,yi,zi,0.0f);
                 }
-
                 TSDF->setValue(xi, yi, zi, TSDF_val);
             }
         }
@@ -108,6 +115,7 @@ void ModelReconstructor::fuseFrame(Eigen::MatrixXd depthMap, Eigen::Matrix4d cam
 {
     std::cout << "Fusing Frame... " << std::endl;
 
+    //Create TSDF for new frame
     VoxelGrid *TSDF_local( new VoxelGrid(_resolution, _size, _offset));
     VoxelGrid *weights_local( new VoxelGrid(_resolution, _size, _offset));
     reconstruct_local(depthMap, cameraPose, TSDF_local, weights_local);

@@ -25,8 +25,9 @@ void VoxelGrid::setValue (unsigned int x, unsigned int y, unsigned int z, float 
 }
 
 Eigen::Vector3d VoxelGrid::getPointAtIndex(Eigen::Vector3i index){
-	Eigen::Vector3d point( double(index.x()) *size.x(), double(index.y()) *size.y(), double(index.z()) *size.z());
-    point += offset;
+	Eigen::Vector3d point = (index.cast<double>()).cwiseQuotient((resolution-Eigen::Vector3i::Ones()).cast<double>());
+	point = point.cwiseProduct(size);
+    point -= offset;
 	return point;
 }
 
@@ -43,6 +44,8 @@ void VoxelGrid::print() {
     }
 }
 
+
+//todo: ?surely should include resolution somehow?
 float VoxelGrid::getValueAtPoint (Eigen::Vector3d point)
 {
 	// Clamp point to within the voxel volume

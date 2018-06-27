@@ -7,17 +7,8 @@
 
 int main (int argc, char* argv[])
 {
-	Eigen::Vector3i resolution = Eigen::Vector3i::Ones () * 17;
-	Eigen::Vector3d size = Eigen::Vector3d::Ones () * 1.0;  //todo
-	Eigen::Vector3d offset = Eigen::Vector3d::Zero ();
-	float truncationDistance = 1;
-
-
-
-
+    // INIT CAMERA
     std::string filenameIn = "/home/opeide/TUM/3D scanning/Kinect-Fusion/data/rgbd_dataset_freiburg1_xyz/";
-
-    // load video
     std::cout << "Initialize virtual sensor..." << std::endl;
     VirtualSensor sensor;
     if (!sensor.Init(filenameIn))
@@ -25,18 +16,37 @@ int main (int argc, char* argv[])
         std::cout << "Failed to initialize the sensor!\nCheck file path!" << std::endl;
         return -1;
     }
-
-    sensor.ProcessNextFrame();
-
-
+    std::cout << "Virtual sensor initialized!" << std::endl;
     Eigen::Matrix3d cameraIntrinsic = sensor.GetDepthIntrinsics().cast<double>();
-    Eigen::Vector2i camResolution(sensor.GetDepthImageWidth(), sensor.GetDepthImageWidth());
-    ModelReconstructor fuser(truncationDistance, resolution, size, offset, cameraIntrinsic, camResolution);
+    int depthCols = sensor.GetDepthImageWidth();
+    int depthRows = sensor.GetDepthImageHeight();
+    Eigen::Vector2i camResolution(depthCols, depthRows);
 
 
+    //INIT TSDF
+    Eigen::Vector3i resolution = Eigen::Vector3i::Ones () * 100; //num voxels in each dimension of TSDF
+    Eigen::Vector3d size = Eigen::Vector3d::Ones () * 3.0;  //size of model in meters
+    Eigen::Vector3d offset(2,1,0);
+    float truncationDistance = 0.3;
+    ModelReconstructor model(truncationDistance, resolution, size, offset, cameraIntrinsic, camResolution);
 
+    for (int i=0; i<2; ++i){
+        //LOAD FRAME
+        sensor.ProcessNextFrame();
+        float* depthMapArr = sensor.GetDepth();
+        Eigen::MatrixXf depthMapf = Eigen::Map< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> >(depthMapArr, depthRows, depthCols);
+        Eigen::MatrixXd depthMap = depthMapf.cast<double>();
+        Eigen::Matrix4d cameraPose = Eigen::Matrix4d::Identity();
+        cameraPose = sensor.GetTrajectory().cast<double>();
+        //cameraPose.col(3) = Eigen::Vector4d::Ones();
 
-    std::cout << "Completed!" << std::endl;
+        //FUSE FRAME
+        model.fuseFrame(depthMap,cameraPose);
+        std::cout << cameraPose << std::endl;
+    }
+    model.printTSDF();
+
+    std::cout << "Exiting!" << std::endl;
     return 0;
 
 
@@ -58,14 +68,6 @@ int main (int argc, char* argv[])
 //    cameraPose2(1,3) = resolution.y();
 
 
-    //Fuse depthmaps
-//    sensor.ProcessNextFrame();
-//
-//    float* depthMapArr = sensor.GetDepth();
-//    Eigen::MatrixXd depthMap = Eigen::Map<Eigen::MatrixXf>(depthMapArr, camResolution(1), camResolution(0)).cast<Eigen::MatrixXd>();
-//
-//    Eigen::Matrix4d cameraPose = Eigen::Matrix4d::Ones();//sensor.GetTrajectory().cast<double>();
-//
-//    fuser.fuseFrame(depthMap,cameraPose);
+
 
 }
