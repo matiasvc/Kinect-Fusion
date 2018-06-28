@@ -53,6 +53,29 @@ void ModelReconstructor::printTSDF() {
 }
 
 
+void ModelReconstructor::writeTSDFToFile(std::string fileName){
+    std::cout << "Writing to file..." << std::endl;
+    std::ofstream file;
+    file.open(fileName);
+    for (unsigned int x = 0; x < _resolution.x(); ++x) {
+        for(unsigned int y = 0; y < _resolution.y(); ++y){
+            for (unsigned int z = 0; z < _resolution.z(); ++z){
+                if (_weights_global->getValue(x, y, z) > 0){
+                    Eigen::Vector3d point = _TSDF_global->getPointAtIndex(Eigen::Vector3i(x,y,z));
+                    //file << point.x() << "," << point.y() << "," << point.z() << "," << _TSDF_global->getValue(x, y, z) << "\n";
+                    file << x << "," << y << "," << z << "," << _TSDF_global->getValue(x, y, z) << "\n";
+                }
+                else{
+                    file << x << "," << y << "," << z << "," << 1.0 << "\n";
+                }
+            }
+        }
+    }
+    file.close();
+    std::cout << "Wrote to file!" << std::endl;
+}
+
+
 //Loop over every world point and calculate a truncated signed distance value (TSDF), along with a weight
 void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d cameraPose, VoxelGrid* TSDF, VoxelGrid* weights)
 {

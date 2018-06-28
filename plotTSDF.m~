@@ -1,0 +1,30 @@
+a = load('cmake-build-debug/TSDF.csv');
+x = a(:, 1);
+y = a(:, 2);
+z = a(:, 3);
+v = a(:, 4);
+
+
+
+[X, Y, Z] = meshgrid(unique(x), unique(y), unique(z)); 
+V = ones(size(X));
+
+for i = 1:size(v)
+    xi = x()
+  V(x(i), y(i), z(i)) = v(i)
+end
+
+
+figure;
+clf;
+%scatter3(x,y,z,1,v);
+fv = isosurface (X,Y,Z,V,0.0);
+p = patch(fv);
+set(p,'FaceColor','red','EdgeColor','none');
+camlight;
+lighting gouraud;
+
+axis([0 40 0 40 0 40]);
+xlabel('x')
+ylabel('y')
+zlabel('z')

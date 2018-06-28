@@ -7,6 +7,7 @@
 #include <iostream>
 #include <algorithm>
 #include <tuple>
+#include <fstream>
 
 #include "VoxelGrid.hpp"
 
@@ -25,6 +26,8 @@ public:
                         Eigen::Vector2i camResolution);
 
     void printTSDF();
+
+    void writeTSDFToFile(std::string fileName);
 
     void fuseFrame(Eigen::MatrixXd depthMap, Eigen::Matrix4d cameraPose);
 
