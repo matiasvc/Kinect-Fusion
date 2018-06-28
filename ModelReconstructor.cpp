@@ -79,8 +79,14 @@ void ModelReconstructor::writeTSDFToFile(std::string fileName){
 //Loop over every world point and calculate a truncated signed distance value (TSDF), along with a weight
 void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d cameraPose, VoxelGrid* TSDF, VoxelGrid* weights)
 {
+    std::cout << "\tinit" << std::endl;
     weights->setAllValues(1.0f);
     TSDF->setAllValues(1.0f);
+    std::cout << "\tinit done" << std::endl;
+
+    Eigen::Matrix4d cameraPoseInv = cameraPose.inverse();
+    Eigen::Vector3d cameraPoint;
+    Eigen::Vector3d pixPointHomo;
 
     for (int xi=0; xi<_resolution.x(); ++xi){
         for (int yi=0; yi<_resolution.z(); ++yi){
@@ -88,14 +94,11 @@ void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matr
                 Eigen::Vector3i voxelIndex(xi,yi,zi);
 
                 //convert voxel indexes to world coordinates
-                Eigen::Vector3d worldPoint = TSDF->getPointAtIndex(voxelIndex);
                 Eigen::Vector4d worldPointHomo;
-                worldPointHomo << worldPoint, 1;
+                worldPointHomo << TSDF->getPointAtIndex(voxelIndex), 1;
 
                 //transform world point to cam coords
-                Eigen::Matrix4d cameraPoseInv = cameraPose.inverse();
-                Eigen::Vector4d cameraPointHomo = (cameraPoseInv * worldPointHomo);
-                Eigen::Vector3d cameraPoint = cameraPointHomo.head(3);
+                cameraPoint = (cameraPoseInv * worldPointHomo).head(3);
                 if(cameraPoint.z() <= 0){ //point behind camera
                     TSDF->setValue(xi, yi, zi, 0.0f);
                     weights->setValue(xi,yi,zi,0.0f);
@@ -103,7 +106,7 @@ void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matr
                 }
 
                 //Project point to pixel in depthmap
-                Eigen::Vector3d pixPointHomo = _cameraIntrinsic * cameraPoint;
+                pixPointHomo = _cameraIntrinsic * cameraPoint;
                 Eigen::Vector2i pixPoint;
                 pixPoint << pixPointHomo.x()/pixPointHomo.z(), pixPointHomo.y()/pixPointHomo.z();
 
@@ -141,7 +144,9 @@ void ModelReconstructor::fuseFrame(Eigen::MatrixXd depthMap, Eigen::Matrix4d cam
     //Create TSDF for new frame
     VoxelGrid *TSDF_local( new VoxelGrid(_resolution, _size, _offset));
     VoxelGrid *weights_local( new VoxelGrid(_resolution, _size, _offset));
+    std::cout << "recontructing local..." << std::endl;
     reconstruct_local(depthMap, cameraPose, TSDF_local, weights_local);
+    std::cout << "reconstructed local!" << std::endl;
 
     //update global TSDF and weights using a running average
     *_TSDF_global = (*_weights_global)*(*_TSDF_global) + (*weights_local)*(*TSDF_local);

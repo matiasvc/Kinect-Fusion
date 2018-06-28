@@ -7,6 +7,8 @@
 
 
 //todo: x forveksles med y
+//todo: speed up local reconstruction
+//todo: camera pose drifts
 
 int main (int argc, char* argv[])
 {
@@ -27,32 +29,40 @@ int main (int argc, char* argv[])
 
 
     //INIT TSDF
-    Eigen::Vector3i resolution = Eigen::Vector3i::Ones () * 70; //num voxels in each dimension of TSDF
-    Eigen::Vector3d size = Eigen::Vector3d::Ones () * 5.0;  //size of model in meters
+    Eigen::Vector3i resolution = Eigen::Vector3i::Ones () * 100; //num voxels in each dimension of TSDF
+    Eigen::Vector3d size = Eigen::Vector3d::Ones () * 6.0;  //size of model in meters
     Eigen::Vector3d offset(0,0,0); //camera pose is relative to this point
     float truncationDistance = 0.2;
     ModelReconstructor model(truncationDistance, resolution, size, offset, cameraIntrinsic, camResolution);
 
 
 
-    for (int i=0; i<2; ++i){
+    for (int i=0; i<3; ++i){
         //LOAD FRAME
-        for (int j=0; j<5; ++j) {
+        for (int j=0; j<20; ++j) {
             sensor.ProcessNextFrame();
         }
-        if (i ==0){
-            continue;
+        if (i ==1){
+            //continue;
         }
 
         float* depthMapArr = sensor.GetDepth();
         Eigen::MatrixXf depthMapf = Eigen::Map< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> >(depthMapArr, depthRows, depthCols);
         Eigen::MatrixXd depthMap = depthMapf.cast<double>();
         Eigen::Matrix4d cameraPose = sensor.GetTrajectory().cast<double>();//Eigen::Matrix4d::Identity();
-        cameraPose.col(3) += Eigen::Vector4d(3,3.5,1.5,0);
+        cameraPose.col(3) += Eigen::Vector4d(3,4,3,0);
 
         //FUSE FRAME
         model.fuseFrame(depthMap,cameraPose);
         std::cout << cameraPose << std::endl;
+        if (i==0){
+            model.writeTSDFToFile("TSDF0.csv");
+        }
+        if (i==25){
+            model.writeTSDFToFile("TSDF1.csv");
+        }
+
+
     }
     model.writeTSDFToFile("TSDF.csv");
 
