@@ -1,42 +1,66 @@
 #include "VoxelGrid.hpp"
 
-VoxelGrid::VoxelGrid(Eigen::Vector3i resolution, Eigen::Vector3d size, Eigen::Vector3d offset)
-: resolution(resolution), size(size), offset(offset)
+#include <math.h>
+
+#include <iostream>
+
+VoxelGrid::VoxelGrid(unsigned int resolution, double size)
+: resolution(resolution), size(size)
 {
-	voxelData = new float[resolution.x ()*resolution.y ()*resolution.z ()];
-	weightData = new float[resolution.x ()*resolution.y ()*resolution.z ()];
+	voxelData = new float[resolution*resolution*resolution];
 }
 
-VoxelGrid::~VoxelGrid ()
+VoxelGrid::~VoxelGrid()
 {
 	delete [] voxelData;
 }
 
-float VoxelGrid::getValue (unsigned int x, unsigned int y, unsigned int z)
+float VoxelGrid::getValue(unsigned int x, unsigned int y, unsigned int z)
 {
-	if (x < resolution.x() and y < resolution.y() and z < resolution.z()) { return 0.0f; }
-	return voxelData[x + y*resolution.y() + z*resolution.y()*resolution.z()];
+	if (x >= resolution or y >= resolution or z >= resolution) { return 0.0f; }
+	return voxelData[x + y*resolution + z*resolution*resolution];
 }
 
-void VoxelGrid::setValue (unsigned int x, unsigned int y, unsigned int z, float value)
+void VoxelGrid::setValue(unsigned int x, unsigned int y, unsigned int z, float value)
 {
-	if (x < resolution.x() and y < resolution.y() and z < resolution.z()) { return; }
-	voxelData[x + y*resolution.y() + z*resolution.y()*resolution.z()] = value;
+	if (x >= resolution or y >= resolution or z >= resolution) { return; }
+	voxelData[x + y*resolution + z*resolution*resolution] = value;
 }
 
-float VoxelGrid::getValueAtPoint (Eigen::Vector3d point)
+bool  VoxelGrid::withinGrid(Eigen::Vector3d point)
+{
+	double x = point.x();
+	double y = point.y();
+	double z = point.z();
+
+	return x >= 0 and x <= size and
+	       y >= 0 and y <= size and
+	       z >= 0 and z <= size;
+}
+
+float VoxelGrid::getValueAtPoint(Eigen::Vector3d point)
 {
 	// Clamp point to within the voxel volume
-	point.cwiseMin (offset);
-	point.cwiseMax (offset + size);
 
-	auto x_local = float((point.x() - offset.x())/size.x());
-	auto y_local = float((point.y() - offset.y())/size.y());
-	auto z_local = float((point.z() - offset.z())/size.z());
+	auto x_local = float(point.x()/size)*resolution;
+	auto y_local = float(point.y()/size)*resolution;
+	auto z_local = float(point.z()/size)*resolution;
+
+	if (x_local < 0.0) { x_local = 0.0; }
+	if (y_local < 0.0) { y_local = 0.0; }
+	if (z_local < 0.0) { z_local = 0.0; }
+
+	if (x_local > resolution - 2) { x_local = float(resolution - 2); }
+	if (y_local > resolution - 2) { y_local = float(resolution - 2); }
+	if (z_local > resolution - 2) { z_local = float(resolution - 2); }
 
 	auto x1 = (unsigned int) x_local;
 	auto y1 = (unsigned int) y_local;
 	auto z1 = (unsigned int) z_local;
+
+	if (x1 > resolution - 2) { x1 = resolution - 2; }
+	if (y1 > resolution - 2) { y1 = resolution - 2; }
+	if (z1 > resolution - 2) { z1 = resolution - 2; }
 
 	float xd = x_local - x1;
 	float yd = y_local - y1;
@@ -59,20 +83,45 @@ float VoxelGrid::getValueAtPoint (Eigen::Vector3d point)
 	float c0 = c00*(1 - yd) + c10*yd;
 	float c1 = c01*(1 - yd) + c11*yd;
 
-	float c = c0*(1 - zd) + c1*zd;
-
-	return c;
+	return c0*(1 - zd) + c1*zd;
 }
 
-float VoxelGrid::getWeight (unsigned int x, unsigned int y, unsigned int z)
+bool VoxelGrid::projectRayToVoxelPoint(Eigen::Vector3d origin, Eigen::Vector3d direction, double& length)
 {
-	if (x < resolution.x() and y < resolution.y() and z < resolution.z()) { return 0.0f; }
-	return weightData[x + y*resolution.y() + z*resolution.y()*resolution.z()];
+	double dirfrac_x = 1.0 / direction.x();
+	double dirfrac_y = 1.0 / direction.y();
+	double dirfrac_z = 1.0 / direction.z();
+
+	Eigen::Vector3d lb = Eigen::Vector3d::Zero();
+	Eigen::Vector3d rt = Eigen::Vector3d::Ones()*(size);
+
+	double t1 = (lb.x() - origin.x())*dirfrac_x;
+	double t2 = (rt.x() - origin.x())*dirfrac_x;
+	double t3 = (lb.y() - origin.y())*dirfrac_y;
+	double t4 = (rt.y() - origin.y())*dirfrac_y;
+	double t5 = (lb.z() - origin.z())*dirfrac_z;
+	double t6 = (rt.z() - origin.z())*dirfrac_z;
+
+	double tmin = std::fmax( std::fmax( std::fmin( t1, t2 ), std::fmin( t3, t4 ) ), std::fmin( t5, t6 ) );
+	double tmax = std::fmin( std::fmin( std::fmax( t1, t2 ), std::fmax( t3, t4 ) ), std::fmax( t5, t6 ) );
+
+	// if tmax < 0, ray (line) is intersecting AABB, but the whole AABB is behind us
+	if (tmax < 0)
+	{
+		length = tmax;
+		return false;
+	}
+
+	// if tmin > tmax, ray doesn't intersect AABB
+	if (tmin > tmax)
+	{
+		length = tmax;
+		return false;
+	}
+
+
+	length = tmin;
+	return true;
 }
 
-void VoxelGrid::setWeight (unsigned int x, unsigned int y, unsigned int z, float value)
-{
-	if (x < resolution.x() and y < resolution.y() and z < resolution.z()) { return; }
-	weightData[x + y*resolution.y() + z*resolution.y()*resolution.z()] = value;
-}
 

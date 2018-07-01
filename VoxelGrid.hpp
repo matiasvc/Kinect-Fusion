@@ -8,23 +8,21 @@ class VoxelGrid
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    VoxelGrid(Eigen::Vector3i resolution, Eigen::Vector3d size, Eigen::Vector3d offset);
+    VoxelGrid(unsigned int resolution, double size);
     ~VoxelGrid ();
 
 	float getValue(unsigned int x, unsigned int y, unsigned int z);
 	void setValue(unsigned int x, unsigned int y, unsigned int z, float value);
 
+	bool  withinGrid(Eigen::Vector3d point);
 	float getValueAtPoint(Eigen::Vector3d point);
+	bool projectRayToVoxelPoint (Eigen::Vector3d origin, Eigen::Vector3d direction, double& length);
 
-	float getWeight(unsigned int x, unsigned int y, unsigned int z);
-	void setWeight(unsigned int x, unsigned int y, unsigned int z, float value);
+	const unsigned int resolution;
+	const double size;
+
 private:
-	Eigen::Vector3i resolution;
-	Eigen::Vector3d size;
-	Eigen::Vector3d offset;
-
 	float *voxelData;
-	float *weightData;
 };
 
 
