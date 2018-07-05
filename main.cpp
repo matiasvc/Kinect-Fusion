@@ -45,7 +45,7 @@ int main (int argc, char* argv[])
     
     
     //////////////////////////////////////////////////////////////////////////
-    // isakrs' part
+    /** isakrs' part. Geting vertices with normals in camera space. **/
     
     std::string filenameIn = "./data/rgbd_dataset_freiburg1_xyz/";
     std::string filenameBaseOut = "mesh_";
@@ -59,21 +59,19 @@ int main (int argc, char* argv[])
         return -1;
     }
     
-    // max sqrdDistance between points to in order to compute a normal between them
-    float edgeThresholdSqrd = 0.05f*0.05f; // 5cm distance
+    // max sqrdDistance between point and neightbor in order to normal
+    float edgeThresholdSqrd = 0.05f*0.05f; // 5cm apart
     
-    // convert video to meshes
     while (sensor.ProcessNextFrame())
     {
-        // get global vertices of frame
+        // get vertices of current frame, vertices will be in CAMERA SPACE.
         std::vector<Vertex> vertices = GetVertices(sensor, edgeThresholdSqrd);
         
          // write mesh file
          std::stringstream filenameOut;
-         filenameOut << "./mesh/"
-         << filenameBaseOut << sensor.GetCurrentFrameCnt() << ".obj";
+         filenameOut << "./mesh/" << filenameBaseOut << sensor.GetCurrentFrameCnt() << ".obj";
          
-         if (!WriteToFile(vertices, sensor.GetDepthImageWidth(), sensor.GetDepthImageHeight(), filenameOut.str()))
+         if (!WriteToFile(vertices, filenameOut.str()))
          {
          std::cout << "Failed to write mesh!\nCheck file path!" << std::endl;
          return -1;

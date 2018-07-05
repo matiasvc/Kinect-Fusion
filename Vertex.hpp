@@ -23,6 +23,14 @@ struct Vertex
     Vector3f normal;
 };
 
+/**
+Get vertices in CAMERA SPACE from sensor.
+ 
+It will compute the vertices from the sensors current frame.
+Vertecies that are not further apart from its neighbors than edgeThresholdSqrd,
+will get a normal computed. The other vertices will have normal value (MINF, MINF, MINF).
+**/
 std::vector<Vertex> GetVertices(VirtualSensor& sensor, float edgeThresholdSqrd);
 
-bool WriteToFile(std::vector<Vertex>& vertices, unsigned int width, unsigned int height, const std::string& filename);
+/** Writes vertices to with normal to an obj-file. **/
+bool WriteToFile(std::vector<Vertex>& vertices, const std::string& filename);

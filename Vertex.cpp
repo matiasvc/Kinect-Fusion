@@ -39,13 +39,16 @@ std::vector<Vertex> GetVertices(VirtualSensor& sensor, float edgeThresholdSqrd)
     // depth extrinsics. To get camera RDB and depth on top each other
     Matrix4f depthExtrinsicsInv = sensor.GetDepthExtrinsics().inverse();
     
-    //  trajectory. To map camera points to world space
-    Matrix4f trajectoryInv = sensor.GetTrajectory().inverse();
+    // trajectory. To map camera points to world space
+    //Matrix4f trajectoryInv = sensor.GetTrajectory().inverse();
+    // trajectory will not be done. Just keeping the comment.
     
-    // if the depth value at idx is invalid (MINF) write the following values to the vertices array
-    // vertices[idx].position = Vector4f(MINF, MINF, MINF, MINF);
-    // vertices[idx].color = Vector4uc(0,0,0,0);
-    // otherwise apply back-projection and transform the vertex to world space, use the corresponding color from the colormap
+    // if the depth value at idx is invalid (MINF), then
+        // vertices[idx].position = Vector4f(MINF, MINF, MINF, MINF);
+        // vertices[idx].color = Vector4uc(0,0,0,0);
+    // otherwise
+        // apply back-projection and transform the vertex to CAMERA space,
+        // use the corresponding color from the colormap
     
     unsigned int imageWidth = sensor.GetDepthImageWidth();
     unsigned int imageHeight = sensor.GetDepthImageHeight();
@@ -85,6 +88,14 @@ std::vector<Vertex> GetVertices(VirtualSensor& sensor, float edgeThresholdSqrd)
         vertices[i].color = c;
     }
     
+    // Normals are computed according to this alg:
+    // if vertex is on the egde of camera image (an edgeIdx), then
+        // vertices[edgeIdx].normal will be (MINF, MINF, MINF)
+    // else if vertex and neigbors is too far from each other
+        // vertex[idx].normal will be (MINF, MINF, MINF)
+    // else, now it only makes sence to compute a normal
+        // vertex[idx].normal will be cross product of neighbors' positons
+    
     // edge indices
     std::vector<unsigned int> edgeIndices;
     for (int u = 0; u < imageWidth; ++u)
@@ -102,16 +113,14 @@ std::vector<Vertex> GetVertices(VirtualSensor& sensor, float edgeThresholdSqrd)
         edgeIndices.push_back(leftEdgeIdx);
     }
     
-    // calculate vertex normals
+    // Edge vertices
     Vector3f normalInf(MINF, MINF, MINF);
-    
-    // The edge vertices have no normal
     for (auto const& edgeIdx: edgeIndices)
     {
         vertices[edgeIdx].normal = normalInf;
     }
     
-    // Inside the edge vertices
+    // None edge vertices
     for (int u = 1; u < imageWidth - 1; ++u)
     {
         for (int v = 1; v < imageHeight - 1; ++v)
@@ -158,15 +167,15 @@ std::vector<Vertex> GetVertices(VirtualSensor& sensor, float edgeThresholdSqrd)
 }
 
 
-bool WriteToFile(std::vector<Vertex>& vertices, unsigned int width, unsigned int height, const std::string& filename)
+bool WriteToFile(std::vector<Vertex>& vertices, const std::string& filename)
 {
-    // file format http://paulbourke.net/dataformats/obj/minobj.html
+    // file format obj: http://paulbourke.net/dataformats/obj/minobj.html
     
-    // Write off file
+    // open file
     std::ofstream outFile(filename);
     if (!outFile.is_open()) return false;
     
-    // Save vertecies: the position (point cloud and normal)
+    // Save vertecies with position and normal
     for (auto const& v: vertices)
     {
         if (v.normal.allFinite())
