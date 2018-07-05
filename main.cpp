@@ -136,8 +136,6 @@ std::vector<Vertex> GetVertices(VirtualSensor& sensor, float edgeThresholdSqrd)
     // calculate vertex normals
     Vector3f normalInf(MINF, MINF, MINF);
     
-    std::cout << "NormalInf: " << normalInf << std::endl;
-    
     // The edge vertices have no normal
     for (auto const& edgeIdx: edgeIndices)
     {
@@ -182,7 +180,6 @@ std::vector<Vertex> GetVertices(VirtualSensor& sensor, float edgeThresholdSqrd)
                     Vector4f v2 = pUpper - pLower;
                     Vector3f normal = cross(v1, v2).normalized();
                     vertices[idx].normal = normal;
-                    
                 }
             }
         }
