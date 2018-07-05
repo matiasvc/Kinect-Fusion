@@ -42,7 +42,8 @@ set(
 	Raytracer.cpp 
 	ImplicitSurface.hpp 
 	Pose.cpp 
-	FreeImageHelper.cpp)
+	FreeImageHelper.cpp
+	Vertex.cpp)
 
 # executable files
 add_executable(Kinect-Fusion ${SOURCE_FILES})
