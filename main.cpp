@@ -136,6 +136,8 @@ std::vector<Vertex> GetVertices(VirtualSensor& sensor, float edgeThresholdSqrd)
     // calculate vertex normals
     Vector3f normalInf(MINF, MINF, MINF);
     
+    std::cout << "NormalInf: " << normalInf << std::endl;
+    
     // The edge vertices have no normal
     for (auto const& edgeIdx: edgeIndices)
     {
@@ -152,11 +154,11 @@ std::vector<Vertex> GetVertices(VirtualSensor& sensor, float edgeThresholdSqrd)
             int leftIdx  = v * imageWidth + (u - 1);
             int lowerIdx = (v + 1) * imageWidth + u;
             int upperIdx = (v - 1) * imageWidth + u;
-            if ( !( vertices[idx].position.allFinite() &&
-                   vertices[rightIdx].position.allFinite() &&
-                   vertices[leftIdx].position.allFinite() &&
-                   vertices[lowerIdx].position.allFinite() &&
-                   vertices[upperIdx].position.allFinite()) )  // then one or more of the vertices does not exist
+            if ( !(vertices[idx].position.allFinite()       &&
+                   vertices[rightIdx].position.allFinite()  &&
+                   vertices[leftIdx].position.allFinite()   &&
+                   vertices[lowerIdx].position.allFinite()  &&
+                   vertices[upperIdx].position.allFinite()) )  // then one or more vertex doesn't exist
             {
                 vertices[idx].normal = normalInf;
             }
@@ -180,6 +182,7 @@ std::vector<Vertex> GetVertices(VirtualSensor& sensor, float edgeThresholdSqrd)
                     Vector4f v2 = pUpper - pLower;
                     Vector3f normal = cross(v1, v2).normalized();
                     vertices[idx].normal = normal;
+                    
                 }
             }
         }
@@ -189,7 +192,7 @@ std::vector<Vertex> GetVertices(VirtualSensor& sensor, float edgeThresholdSqrd)
 }
 
 
-bool WriteMesh(std::vector<Vertex>& vertices, unsigned int width, unsigned int height, const std::string& filename)
+bool WriteToFile(std::vector<Vertex>& vertices, unsigned int width, unsigned int height, const std::string& filename)
 {
     // file format http://paulbourke.net/dataformats/obj/minobj.html
     
@@ -249,7 +252,7 @@ int main (int argc, char* argv[])
     //////////////////////////////////////////////////////////////////////////
     // isakrs' part
     
-    std::string filenameIn = "/Users/isakrathestore/Documents/3D Scanning/Exercise 1/IN2354-Exercise1/data/rgbd_dataset_freiburg1_xyz/";
+    std::string filenameIn = "./data/rgbd_dataset_freiburg1_xyz/";
     std::string filenameBaseOut = "mesh_";
     
     // load video
@@ -270,20 +273,16 @@ int main (int argc, char* argv[])
         // get global vertices of frame
         std::vector<Vertex> vertices = GetVertices(sensor, edgeThresholdSqrd);
         
-        std::cout << "Made vertices vector." << std::endl;
-        
-        /*
          // write mesh file
          std::stringstream filenameOut;
-         filenameOut << "/Users/isakrathestore/Documents/3D Scanning/Exercise 1/IN2354-Exercise1/mesh/"
+         filenameOut << "./mesh/"
          << filenameBaseOut << sensor.GetCurrentFrameCnt() << ".obj";
          
-         if (!WriteMesh(vertices, sensor.GetDepthImageWidth(), sensor.GetDepthImageHeight(), filenameOut.str()))
+         if (!WriteToFile(vertices, sensor.GetDepthImageWidth(), sensor.GetDepthImageHeight(), filenameOut.str()))
          {
          std::cout << "Failed to write mesh!\nCheck file path!" << std::endl;
          return -1;
          }
-         */
     }
 
 	return 0;
