@@ -11,7 +11,6 @@
 #include "Pose.hpp"
 #include "Vertex.hpp"
 
-
 int main (int argc, char* argv[])
 {
 
@@ -21,7 +20,7 @@ int main (int argc, char* argv[])
     // load video
     std::cout << "Initialize virtual sensor..." << std::endl;
     VirtualSensor sensor;
-    if (!sensor.Init(filenameIn))
+    if (!sensor.init(filenameIn))
     {
         std::cout << "Failed to initialize the sensor!\nCheck file path!" << std::endl;
         return -1;
@@ -30,7 +29,7 @@ int main (int argc, char* argv[])
     // max sqrdDistance between point and neightbor in order to normal
     float edgeThresholdSqrd = 0.05f*0.05f; // 5cm apart
     
-    while (sensor.ProcessNextFrame())
+    while (sensor.processNextFrame())
     {
         // get vertices of current frame, vertices will be in CAMERA SPACE.
         std::vector<Vertex> vertices = GetVertices(sensor, edgeThresholdSqrd);

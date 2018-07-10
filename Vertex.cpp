@@ -27,17 +27,17 @@ std::vector<Vertex> GetVertices(VirtualSensor& sensor, float edgeThresholdSqrd)
 {
     // get ptr to the current depth frame
     // depth is stored in row major (get dimensions via sensor.GetDepthImageWidth() / GetDepthImageHeight())
-    float* depthMap = sensor.GetDepth();
+    float* depthMap = sensor.getDepth();
     
     // get ptr to the current color frame
     // color is stored as RGBX in row major (4 byte values per pixel, get dimensions via sensor.GetColorImageWidth() / GetColorImageHeight())
-    BYTE* colorMap = sensor.GetColorRGBX();
+    BYTE* colorMap = sensor.getColorRGBX();
     
     // depth intrinsics. From image to camera space
-    Matrix3f depthIntrinsicsInv = sensor.GetDepthIntrinsics().inverse();
+    Matrix3f depthIntrinsicsInv = sensor.getDepthIntrinsics().inverse();
     
     // depth extrinsics. To get camera RDB and depth on top each other
-    Matrix4f depthExtrinsicsInv = sensor.GetDepthExtrinsics().inverse();
+    Matrix4f depthExtrinsicsInv = sensor.getDepthExtrinsics().inverse();
     
     // trajectory. To map camera points to world space
     //Matrix4f trajectoryInv = sensor.GetTrajectory().inverse();
@@ -50,8 +50,8 @@ std::vector<Vertex> GetVertices(VirtualSensor& sensor, float edgeThresholdSqrd)
         // apply back-projection and transform the vertex to CAMERA space,
         // use the corresponding color from the colormap
     
-    unsigned int imageWidth = sensor.GetDepthImageWidth();
-    unsigned int imageHeight = sensor.GetDepthImageHeight();
+    unsigned int imageWidth = sensor.getDepthImageWidth();
+    unsigned int imageHeight = sensor.getDepthImageHeight();
     
     std::vector<Vertex> vertices(imageWidth * imageHeight);
     
