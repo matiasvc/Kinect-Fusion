@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 3.0)
 project (Kinect-Fusion)
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 
 

@@ -28,6 +28,7 @@ Eigen::Vector3d VoxelGrid::getPointAtIndex(Eigen::Vector3i index){
 	Eigen::Vector3d point = (index.cast<double>()).cwiseQuotient((resolution-Eigen::Vector3i::Ones()).cast<double>());
 	point = point.cwiseProduct(size);
     point -= offset; //todo: minus or plus
+    //todo: fix half voxel error
 	return point;
 }
 

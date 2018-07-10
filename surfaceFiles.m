@@ -1,10 +1,12 @@
-function plotFiles(fileNames)
+function surfaceFiles(fileNames)
 
 figure;
 clf;
 color = ["red", "blue", "green"];
 numFiles = size(fileNames);
 numFiles = numFiles(2);
+
+
 
 for fileNum = 1:numFiles
     file = fileNames(fileNum)
@@ -35,8 +37,8 @@ for fileNum = 1:numFiles
     lighting gouraud;
     view(103, 37)
     
-    axisSize = size(X)
-    axisSize = axisSize(1)
+    axisSize = size(X);
+    axisSize = axisSize(1);
     axis([0 axisSize 0 axisSize 0 axisSize]);
     xlabel('x')
     ylabel('y')

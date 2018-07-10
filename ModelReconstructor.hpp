@@ -10,7 +10,7 @@
 #include <fstream>
 
 #include "VoxelGrid.hpp"
-
+#include <stdio.h>
 #ifndef KINECT_FUSION_TSDF_fuser_H
 #define KINECT_FUSION_TSDF_fuser_H
 

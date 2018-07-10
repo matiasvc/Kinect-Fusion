@@ -174,6 +174,13 @@ public:
 		return m_currentTrajectory;
 	}
 
+    std::string GetCurrentColorFile(){
+        return m_filenameColorImages[m_currentIdx];
+    }
+	std::string GetCurrentDepthFile(){
+		return m_filenameDepthImages[m_currentIdx];
+	}
+
 private:
 
 	bool ReadFileList(const std::string& filename, std::vector<std::string>& result, std::vector<double>& timestamps)
