@@ -18,13 +18,17 @@ include_directories(${FREEIMAGE_INCLUDE_DIRS})
 # Set c++11
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11")
 
+# Set header files 
+set(
+	HEADER_FILES
+	ImplicitSurface.hpp)
+
 # Set source files
 set(
 	SOURCE_FILES 
 	main.cpp 
 	VoxelGrid.cpp 
-	Raytracer.cpp 
-	ImplicitSurface.hpp 
+	Raytracer.cpp  
 	Pose.cpp 
 	FreeImageHelper.cpp
 	Vertex.cpp)
