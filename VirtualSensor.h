@@ -97,7 +97,7 @@ public:
 		int idx = 0;
 		for (unsigned int i = 0; i < m_trajectory.size(); ++i)
 		{
-			double d = abs(m_trajectoryTimeStamps[i] - timestamp);
+			double d = std::fabs(m_trajectoryTimeStamps[i] - timestamp);
 			if (min > d)
 			{
 				min = d;

@@ -101,6 +101,7 @@ void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matr
                 //transform world point to cam coords
                 cameraPoint = (cameraExtrinsic * worldPointHomo).head(3);
 
+
                 //point behind camera or too far away set weight 0
                 if(cameraPoint.z() <= 0 || cameraPoint.z() > 3.0){
                     TSDF->setValue(xi, yi, zi, 0.0f);

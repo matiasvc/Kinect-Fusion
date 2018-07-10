@@ -43,9 +43,9 @@ int main (int argc, char* argv[])
     std::ofstream camFile;
     camFile.open("cams.csv");
 
-    for (int i=0; i<2; ++i){
+    for (int i=0; i<5; ++i){
         //LOAD FRAME
-        for (int j=0; j<10; ++j) {
+        for (int j=0; j<5; ++j) {
             sensor.ProcessNextFrame();
         }
 
