@@ -3,33 +3,17 @@ project(Kinect-Fusion)
 
 include_directories(${SDL2_INCLUDE_DIRS})
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+# Eigen3
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+
+# OpenCV
 find_package(OpenCV REQUIRED)
 
-# Find path: free image library
-find_path(
-        FREEIMAGE_INCLUDE_DIR
-        NAMES FreeImage.h
-        PATHS
-        /usr/include
-        /usr/local/include
-        /sw/include
-        /opt/local/include
-        DOC "The directory where FreeImage.h resides")
-
-# Find library files: free image library
-find_library(
-        FREEIMAGE_LIBRARY
-        NAMES freeimage
-        PATHS
-        /usr/lib64
-        /usr/lib
-        /usr/local/lib64
-        /usr/local/lib
-        /sw/lib
-        /opt/local/lib
-        ${FREEIMAGE_ROOT_DIR}/lib
-        DOC "The FreeImage library")
+# FreeImage
+find_package(FreeImage REQUIRED)
+include_directories(${FREEIMAGE_INCLUDE_DIRS})
 
 # Set c++11
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11")
