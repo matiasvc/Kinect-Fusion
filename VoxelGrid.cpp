@@ -132,8 +132,8 @@ VoxelGrid VoxelGrid::operator/(const VoxelGrid & rhs)
 {
     VoxelGrid elemDiv = VoxelGrid(resolution, size);
     for(int i=0; i<numElements; ++i){
-        if (voxelData[i]==0 or rhs.voxelData[i]==0){
-            elemDiv.voxelData[i] = 0;
+        if (rhs.voxelData[i]==0){
+            elemDiv.voxelData[i] = -1;
         }else{
             elemDiv.voxelData[i] = voxelData[i] / rhs.voxelData[i];
         }

@@ -36,15 +36,14 @@ int main (int argc, char* argv[])
     Eigen::Vector2i camResolution(depthCols, depthRows);
 
     //INIT TSDF
-	unsigned int resolution = 150; //num voxels in each dimension of TSDF
+	unsigned int resolution = 100; //num voxels in each dimension of TSDF
     double size = 3.0;  //size of model in meters
-    Eigen::Vector3d offset(1,1,0); //camera pose is relative to this point
     float truncationDistance = 0.08;
     ModelReconstructor model(truncationDistance, resolution, size, cameraIntrinsic, camResolution);
 
 
 
-    for (int i=0; i<5; ++i){
+    for (int i=0; i<2; ++i){
         //LOAD FRAME
         for (int j=0; j<5; ++j) {
             sensor.ProcessNextFrame();

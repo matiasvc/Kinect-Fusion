@@ -20,34 +20,14 @@ ModelReconstructor::ModelReconstructor(float truncationDistance,
     _cameraIntrinsic = cameraIntrinsic;
     _camResolution = camResolution;
 
-    _weights_global->setAllValues(0);
-    _TSDF_global->setAllValues(0);
+    _weights_global->setAllValues(0.0);
+    _TSDF_global->setAllValues(-1.0);
 }
 
 
 VoxelGrid *ModelReconstructor::getModel()
 {
     return _TSDF_global;
-}
-
-
-void ModelReconstructor::printTSDF() {
-    std::cout.precision(1);
-    for (unsigned int x = 0; x < _resolution; ++x) {
-        for(unsigned int y = 0; y < _resolution; ++y){
-            for (unsigned int z = 0; z < _resolution; ++z){
-                if (_weights_global->getValue(x, y, z) != 0){
-                    std::cout << _TSDF_global->getValue(x, y, z);
-                }
-                else{
-                    std::cout << " ";
-                }
-                std::cout << "   \t  \t";
-            }
-            std::cout << std::endl;
-        }
-        std::cout << std::endl;
-    }
 }
 
 
@@ -72,8 +52,8 @@ void ModelReconstructor::writeTSDFToFile(std::string fileName){
 //Loop over every world point and calculate a truncated signed distance value (TSDF), along with a weight
 void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d cameraExtrinsic, VoxelGrid* TSDF, VoxelGrid* weights)
 {
-    weights->setAllValues(1.0f);
-    TSDF->setAllValues(1.0f);
+    weights->setAllValues(0);
+    TSDF->setAllValues(-1.0f);
 
 
     //Eigen::Matrix4d cameraPoseInv = cameraPose.inverse();
@@ -92,11 +72,8 @@ void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matr
                 //transform world point to cam coords
                 cameraPoint = (cameraExtrinsic * worldPointHomo).head(3);
 
-
-                //point behind camera or too far away set weight 0
+                //point behind camera or too far away
                 if(cameraPoint.z() <= 0 || cameraPoint.z() > 3.0){
-                    TSDF->setValue(xi, yi, zi, 0.0f);
-                    weights->setValue(xi,yi,zi,0.0f);
                     continue;
                 }
 
@@ -105,10 +82,8 @@ void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matr
                 Eigen::Vector2i pixPoint;
                 pixPoint << pixPointHomo.x()/pixPointHomo.z(), pixPointHomo.y()/pixPointHomo.z();
 
-                //if pix outisde depthmap set weight 0
+                //if pix outisde depthmap
                 if (bool(((pixPoint-_camResolution).array() >= 0).any()) || bool(((pixPoint).array() < 0).any())){
-                    TSDF->setValue(xi, yi, zi, 0.0f);
-                    weights->setValue(xi,yi,zi,0.0f);
                     continue;
                 }
 
@@ -122,11 +97,11 @@ void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matr
                 if (TSDF_val >= -_truncationDistance){
                     TSDF_val = std::min(1.0f, fabsf(TSDF_val)/_truncationDistance)*copysignf(1.0f, TSDF_val);
                 }
-                else{ //too far inside obstacle
-                    TSDF_val = 0.0f;
-                    weights->setValue(xi,yi,zi,0.0f);
+                else{ //too far behind obstacle
+                    continue;
                 }
                 TSDF->setValue(xi, yi, zi, TSDF_val);
+                weights->setValue(xi, yi, zi, 1.0);
             }
         }
     }

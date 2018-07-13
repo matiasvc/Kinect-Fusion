@@ -24,8 +24,6 @@ public:
                         Eigen::Matrix3d cameraIntrinsic,
                         Eigen::Vector2i camResolution);
 
-    void printTSDF();
-
     void writeTSDFToFile(std::string fileName);
 
     void fuseFrame(Eigen::MatrixXd depthMap, Eigen::Matrix4d cameraPose);
@@ -43,7 +41,6 @@ private:
     double _size;
     Eigen::Vector2i _camResolution;
 
-    VoxelGrid get_empty_voxelGrid();
     void reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d cameraPose, VoxelGrid* TSDF, VoxelGrid* weight);
 };
 
