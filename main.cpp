@@ -36,11 +36,11 @@ int main (int argc, char* argv[])
     Eigen::Vector2i camResolution(depthCols, depthRows);
 
     //INIT TSDF
-    Eigen::Vector3i resolution = Eigen::Vector3i::Ones() * 150; //num voxels in each dimension of TSDF
-    Eigen::Vector3d size = Eigen::Vector3d::Ones() * 3.0;  //size of model in meters
+	unsigned int resolution = 150; //num voxels in each dimension of TSDF
+    double size = 3.0;  //size of model in meters
     Eigen::Vector3d offset(1,1,0); //camera pose is relative to this point
     float truncationDistance = 0.08;
-    ModelReconstructor model(truncationDistance, resolution, size, offset, cameraIntrinsic, camResolution);
+    ModelReconstructor model(truncationDistance, resolution, size, cameraIntrinsic, camResolution);
 
 
 

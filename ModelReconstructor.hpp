@@ -18,10 +18,9 @@
 class ModelReconstructor
 {
 public:
-    ModelReconstructor( float truncationDistance,
-                        Eigen::Vector3i resolution,
-                        Eigen::Vector3d size,
-                        Eigen::Vector3d offset,
+    ModelReconstructor(float truncationDistance,
+                        unsigned int resolution,
+                        double size,
                         Eigen::Matrix3d cameraIntrinsic,
                         Eigen::Vector2i camResolution);
 
@@ -40,9 +39,8 @@ private:
     float _truncationDistance;
 
     Eigen::Matrix3d _cameraIntrinsic;
-    Eigen::Vector3i _resolution;
-    Eigen::Vector3d _size;
-    Eigen::Vector3d _offset;
+	unsigned int _resolution;
+    double _size;
     Eigen::Vector2i _camResolution;
 
     VoxelGrid get_empty_voxelGrid();

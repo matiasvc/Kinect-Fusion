@@ -7,18 +7,16 @@
 
 
 ModelReconstructor::ModelReconstructor(float truncationDistance,
-                                       Eigen::Vector3i resolution,
-                                       Eigen::Vector3d size,
-                                       Eigen::Vector3d offset,
+                                       unsigned int resolution,
+                                       double size,
                                        Eigen::Matrix3d cameraIntrinsic,
                                         Eigen::Vector2i camResolution)
-:   _TSDF_global(new VoxelGrid(resolution, size, offset)),
-    _weights_global(new VoxelGrid(resolution, size, offset))
+:   _TSDF_global(new VoxelGrid(resolution, size)),
+    _weights_global(new VoxelGrid(resolution, size))
 {
     _truncationDistance = truncationDistance;
     _resolution = resolution;
     _size = size;
-    _offset = offset;
     _cameraIntrinsic = cameraIntrinsic;
     _camResolution = camResolution;
 
@@ -35,9 +33,9 @@ VoxelGrid *ModelReconstructor::getModel()
 
 void ModelReconstructor::printTSDF() {
     std::cout.precision(1);
-    for (unsigned int x = 0; x < _resolution.x(); ++x) {
-        for(unsigned int y = 0; y < _resolution.y(); ++y){
-            for (unsigned int z = 0; z < _resolution.z(); ++z){
+    for (unsigned int x = 0; x < _resolution; ++x) {
+        for(unsigned int y = 0; y < _resolution; ++y){
+            for (unsigned int z = 0; z < _resolution; ++z){
                 if (_weights_global->getValue(x, y, z) != 0){
                     std::cout << _TSDF_global->getValue(x, y, z);
                 }
@@ -59,9 +57,9 @@ void ModelReconstructor::writeTSDFToFile(std::string fileName){
     std::remove(fileName.c_str());
     std::ofstream file;
     file.open(fileName);
-    for (unsigned int x = 0; x < _resolution.x(); ++x) {
-        for(unsigned int y = 0; y < _resolution.y(); ++y){
-            for (unsigned int z = 0; z < _resolution.z(); ++z){
+    for (unsigned int x = 0; x < _resolution; ++x) {
+        for(unsigned int y = 0; y < _resolution; ++y){
+            for (unsigned int z = 0; z < _resolution; ++z){
                 file << x << "," << y << "," << z << "," << _TSDF_global->getValue(x, y, z) << "\n";
             }
         }
@@ -82,9 +80,9 @@ void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matr
     Eigen::Vector3d cameraPoint;
     Eigen::Vector3d pixPointHomo;
 
-    for (int xi=0; xi<_resolution.x(); ++xi){
-        for (int yi=0; yi<_resolution.y(); ++yi){
-            for (int zi=0; zi<_resolution.z(); ++zi){
+    for (int xi=0; xi<_resolution; ++xi){
+        for (int yi=0; yi<_resolution; ++yi){
+            for (int zi=0; zi<_resolution; ++zi){
                 Eigen::Vector3i voxelIndex(xi,yi,zi);
 
                 //convert voxel indexes to world coordinates
@@ -141,8 +139,8 @@ void ModelReconstructor::fuseFrame(Eigen::MatrixXd depthMap, Eigen::Matrix4d cam
     std::cout << "Fusing Frame... " << std::endl;
 
     //Create TSDF for new frame
-    VoxelGrid *TSDF_local( new VoxelGrid(_resolution, _size, _offset));
-    VoxelGrid *weights_local( new VoxelGrid(_resolution, _size, _offset));
+    VoxelGrid *TSDF_local( new VoxelGrid(_resolution, _size));
+    VoxelGrid *weights_local( new VoxelGrid(_resolution, _size));
     reconstruct_local(depthMap, cameraExtrinsic, TSDF_local, weights_local);
 
     //update global TSDF and weights using a running average
