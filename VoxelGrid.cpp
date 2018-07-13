@@ -5,7 +5,7 @@
 #include <iostream>
 
 VoxelGrid::VoxelGrid(unsigned int resolution, double size)
-: resolution(resolution), size(size)
+: resolution(resolution), size(size), voxelSize(size/resolution)
 {
 	voxelData = new float[resolution*resolution*resolution];
 }

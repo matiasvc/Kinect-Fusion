@@ -20,6 +20,7 @@ public:
 
 	const unsigned int resolution;
 	const double size;
+	const double voxelSize;
 
 private:
 	float *voxelData;
