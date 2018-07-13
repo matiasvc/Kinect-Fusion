@@ -62,14 +62,7 @@ void ModelReconstructor::writeTSDFToFile(std::string fileName){
     for (unsigned int x = 0; x < _resolution.x(); ++x) {
         for(unsigned int y = 0; y < _resolution.y(); ++y){
             for (unsigned int z = 0; z < _resolution.z(); ++z){
-                if (_weights_global->getValue(x, y, z) > 0){
-                    //Eigen::Vector3d point = _TSDF_global->getPointAtIndex(Eigen::Vector3i(x,y,z));
-                    //file << point.x() << "," << point.y() << "," << point.z() << "," << _TSDF_global->getValue(x, y, z) << "\n";
-                    file << x << "," << y << "," << z << "," << _TSDF_global->getValue(x, y, z) << "\n";
-                }
-                else{
-                    file << x << "," << y << "," << z << "," << 1.0 << "\n";
-                }
+                file << x << "," << y << "," << z << "," << _TSDF_global->getValue(x, y, z) << "\n";
             }
         }
     }
@@ -142,7 +135,7 @@ void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matr
 }
 
 
-
+//todo: update global model voxels directly. Might be more efficient.
 void ModelReconstructor::fuseFrame(Eigen::MatrixXd depthMap, Eigen::Matrix4d cameraExtrinsic)
 {
     std::cout << "Fusing Frame... " << std::endl;

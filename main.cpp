@@ -29,72 +29,31 @@ int main (int argc, char* argv[])
     int depthCols = sensor.GetDepthImageWidth();
     int depthRows = sensor.GetDepthImageHeight();
     Eigen::Vector2i camResolution(depthCols, depthRows);
-    std::cout << cameraIntrinsic << std::endl;
 
     //INIT TSDF
-    Eigen::Vector3i resolution = Eigen::Vector3i::Ones () * 100; //num voxels in each dimension of TSDF
-    Eigen::Vector3d size = Eigen::Vector3d::Ones () * 2.0;  //size of model in meters
-    Eigen::Vector3d offset(0,0,0); //camera pose is relative to this point
-    float truncationDistance = 0.02;
+    Eigen::Vector3i resolution = Eigen::Vector3i::Ones() * 150; //num voxels in each dimension of TSDF
+    Eigen::Vector3d size = Eigen::Vector3d::Ones() * 3.0;  //size of model in meters
+    Eigen::Vector3d offset(1,1,0); //camera pose is relative to this point
+    float truncationDistance = 0.08;
     ModelReconstructor model(truncationDistance, resolution, size, offset, cameraIntrinsic, camResolution);
-    ModelReconstructor model0(truncationDistance, resolution, size, offset, cameraIntrinsic, camResolution);
-    ModelReconstructor model1(truncationDistance, resolution, size, offset, cameraIntrinsic, camResolution);
 
-    std::ofstream camFile;
-    camFile.open("cams.csv");
+
 
     for (int i=0; i<5; ++i){
         //LOAD FRAME
         for (int j=0; j<5; ++j) {
             sensor.ProcessNextFrame();
         }
-
-        std::cout << sensor.GetCurrentColorFile() << std::endl;
-        std::cout << sensor.GetCurrentDepthFile() << std::endl;
-
         float* depthMapArr = sensor.GetDepth();
         Eigen::MatrixXf depthMapf = Eigen::Map< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> >(depthMapArr, depthRows, depthCols);
         Eigen::MatrixXd depthMap = depthMapf.cast<double>();
-
         Eigen::Matrix4d cameraExtrinsic = sensor.GetTrajectory().cast<double>();//Eigen::Matrix4d::Identity(); //
 
-        //cameraExtrinsic.col(3) = Eigen::Vector4d(-1,0.5,1.5,1);
-
-//
-//        Eigen::Matrix3d rotx30;
-//        rotx30 <<
-//        1.0000,         0.,         0.,
-//        0.,    0.8660,   -0.5000,
-//        0.,    0.5000,    0.8660;
-
-
-//        FUSE FRAME
+        //FUSE FRAME
         model.fuseFrame(depthMap, cameraExtrinsic);
-        camFile << cameraExtrinsic << "\n";
-        std::cout << cameraExtrinsic << std::endl;
-
-//        if (i==0){
-//            camFile << cameraExtrinsic << "\n";
-//            std::cout << cameraExtrinsic << std::endl;
-//
-//            model0.fuseFrame(depthMap,cameraExtrinsic);
-//            model0.writeTSDFToFile("TSDF0.csv");
-//        }
-//        if (i==0){
-//            cameraExtrinsic.block(0,0,3,3) = rotx30; //Eigen::Matrix3d::Identity();
-//            cameraExtrinsic.col(3) = Eigen::Vector4d(-1,0,-1,1);
-//
-//            camFile << cameraExtrinsic << "\n";
-//            std::cout << cameraExtrinsic << std::endl;
-//
-//            model1.fuseFrame(depthMap,cameraExtrinsic);
-//            model1.writeTSDFToFile("TSDF1.csv");
-//        }
-
     }
     model.writeTSDFToFile("TSDF.csv");
 
-    camFile.close();
     std::cout << "Exiting!" << std::endl;
     return 0;
 }
