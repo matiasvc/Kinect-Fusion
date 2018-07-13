@@ -1,8 +1,8 @@
 cmake_minimum_required (VERSION 3.0)
 project (Kinect-Fusion)
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11 -O3")
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+find_package(OpenCV REQUIRED)
 
 
 find_path(
@@ -31,5 +31,6 @@ find_library(
 
 
 
-add_executable (Kinect-Fusion main.cpp VoxelGrid.cpp ImplicitSurface.hpp Raytracer.cpp Raytracer.hpp ModelReconstructor.cpp ModelReconstructor.hpp FreeImageHelper.cpp FreeImageHelper.h VirtualSensor.h Eigen.h)
+add_executable (Kinect-Fusion main.cpp VoxelGrid.cpp ImplicitSurface.hpp Raytracer.cpp Raytracer.hpp ModelReconstructor.cpp ModelReconstructor.hpp FreeImageHelper.cpp FreeImageHelper.h VirtualSensor.h Eigen.h Pose.cpp)
 target_link_libraries (Kinect-Fusion Eigen3::Eigen freeimage)
+target_link_libraries(Kinect-Fusion ${OpenCV_LIBS})

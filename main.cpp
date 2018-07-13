@@ -1,9 +1,14 @@
 #include <iostream>
-#include "VoxelGrid.hpp"
 #include "ModelReconstructor.hpp"
 #include "VirtualSensor.h"
-
 #include <Eigen/Core>
+#include <opencv2/core/core.hpp>
+#include <opencv2/core/eigen.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
+#include "ImplicitSurface.hpp"
+#include "Raytracer.hpp"
+#include "Pose.hpp"
 
 
 //todo: x forveksles med y

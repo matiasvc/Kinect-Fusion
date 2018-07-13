@@ -9,30 +9,32 @@ class VoxelGrid
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    VoxelGrid(Eigen::Vector3i resolution, Eigen::Vector3d size, Eigen::Vector3d offset);
+    VoxelGrid(unsigned int resolution, double size);
     ~VoxelGrid ();
 
-	float getValue(unsigned int x, unsigned int y, unsigned int z);
+    float getValue(unsigned int x, unsigned int y, unsigned int z);
 	void setValue(unsigned int x, unsigned int y, unsigned int z, float value);
 
 
-	Eigen::Vector3d getPointAtIndex(Eigen::Vector3i index);
-	float getValueAtPoint(Eigen::Vector3d point);
-	void setAllValues(float);
+    bool projectRayToVoxelPoint (Eigen::Vector3d origin, Eigen::Vector3d direction, double& length);
+    bool  withinGrid(Eigen::Vector3d point);
+    Eigen::Vector3d getPointAtIndex(Eigen::Vector3i index);
 
-	void operator= (const VoxelGrid&);
-	VoxelGrid operator+ (const VoxelGrid&);
-	VoxelGrid operator* (const VoxelGrid&);
-	VoxelGrid operator/ (const VoxelGrid&);
+    float getValueAtPoint(Eigen::Vector3d point);
+    void setAllValues(float);
 
-	void print();
+    void operator= (const VoxelGrid&);
+    VoxelGrid operator+ (const VoxelGrid&);
+    VoxelGrid operator* (const VoxelGrid&);
+    VoxelGrid operator/ (const VoxelGrid&);
+
+    const unsigned int resolution;
+    const double size;
+    const double voxelSize;
+    int numElements;
 
 private:
-	Eigen::Vector3i resolution;
-	Eigen::Vector3d size;
-	Eigen::Vector3d offset;
 
-    int numElements;
 	float *voxelData;
 };
 
