@@ -47,7 +47,7 @@ public:
 		double y = _x(1) - this->m_center(1);
 		double z = _x(2) - this->m_center(2);
 
-		return std::sqrt(x*x + y*y + z*z) - this->m_radius;
+		return x*x + y*y + z*z - this->m_radius*this->m_radius;
 	}
 
 
@@ -71,10 +71,9 @@ public:
 		const double y = _x(1) - this->m_center(1);
 		const double z = _x(2) - this->m_center(2);
 
-		const double q = std::sqrt(x*x + z*z) - this->m_radius;
-		const double length = std::sqrt(q*q + y*y);
+		double sum = x*x + y*y + z*z + this->m_radius*this->m_radius - this->m_a*this->m_a;
 
-		return length - this->m_a;
+		return sum*sum - 4*this->m_radius*this->m_radius*(x*x + y*y);
 	}
 
 private:

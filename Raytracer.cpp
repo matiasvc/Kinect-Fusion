@@ -4,18 +4,42 @@
 
 #include "Raytracer.hpp"
 
-bool searchRay(VoxelGrid& voxelGrid, Eigen::Vector3d origin, Eigen::Vector3d ray, double& length)
+bool searchRay(VoxelGrid& voxelGrid, Eigen::Vector3d origin, Eigen::Vector3d ray, double& length,
+               const double stepSizeVoxel, const double epsilon)
 {
 	Eigen::Vector3d point = origin + ray*length;
 	float pointValue = voxelGrid.getValueAtPoint(point);
 
-	while (pointValue > 0.0f) {
-		length += ((double)pointValue);
+	double stepSize = voxelGrid.voxelSize * stepSizeVoxel;
+	double previousLength = length;
+
+	while (pointValue > 0.0f)
+	{
+		length += stepSize;
 		point = origin + ray*length;
 
 		if (not voxelGrid.withinGrid(point)) { return false; }
 
 		pointValue = voxelGrid.getValueAtPoint(point);
+	}
+
+	while(true)
+	{
+		double middleLength = (previousLength + length)/2;
+		float middleValue = voxelGrid.getValueAtPoint(origin + ray*middleLength);
+
+		if (middleValue > epsilon)
+		{
+			previousLength = middleLength;
+		}
+		else if (middleValue < -epsilon)
+		{
+			length = middleLength;
+		}
+		else
+		{
+			break;
+		}
 	}
 
 	return true;
@@ -24,6 +48,7 @@ bool searchRay(VoxelGrid& voxelGrid, Eigen::Vector3d origin, Eigen::Vector3d ray
 
 void raytraceImage(VoxelGrid& voxelGrid, Pose cameraPose, Eigen::Matrix3d cameraIntrisic,
                       const unsigned int resolutionWidth, const unsigned int resolutionHeight,
+                      const double stepSizeVoxel, const double epsilon,
                       cv::Mat& depthImage, cv::Mat& normalImage)
 {
 	cv::Mat image = cv::Mat::zeros(resolutionHeight, resolutionWidth, CV_32F);
@@ -49,7 +74,7 @@ void raytraceImage(VoxelGrid& voxelGrid, Pose cameraPose, Eigen::Matrix3d camera
 			double length;
 
 			if (voxelGrid.projectRayToVoxelPoint(origin, ray, length) and // Does the ray hit the voxel grid
-			    searchRay(voxelGrid, origin, ray, length)) // Does the ray hit a zero crossing
+			    searchRay(voxelGrid, origin, ray, length, stepSizeVoxel, epsilon)) // Does the ray hit a zero crossing
 			{
 				depthImage.at<float>(v, u) = (float)length;
 

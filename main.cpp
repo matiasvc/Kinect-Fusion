@@ -13,8 +13,8 @@
 int main (int argc, char* argv[])
 {
 	VoxelGrid grid(128, 3.0);
-//	Torus surface(Eigen::Vector3d::Ones()*1.5, 1.0, 0.20);
-	Sphere surface(Eigen::Vector3d::Ones()*1.5, 1.0);
+	Torus surface(Eigen::Vector3d::Ones()*1.5, 1.0, 0.20);
+//	Sphere surface(Eigen::Vector3d::Ones()*1.5, 1.0);
 
 	fillVoxelGrid(grid, surface);
 
@@ -40,7 +40,8 @@ int main (int argc, char* argv[])
 	while (cv::waitKey(1) != 27)
 	{
 		Pose camPose = Pose::PoseFromEuler(camEuler, camPos);
-		raytraceImage(grid, camPose, K, resolutionWidth, resolutionHeight, depthImage, normalMap);
+		raytraceImage(grid, camPose, K, resolutionWidth, resolutionHeight,
+		              6.0, 1e-3, depthImage, normalMap);
 
 		double min, max;
 		cv::minMaxLoc(depthImage, &min, &max);
