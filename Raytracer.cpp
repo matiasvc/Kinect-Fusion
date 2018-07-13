@@ -9,18 +9,22 @@ bool searchRay(VoxelGrid& voxelGrid, Eigen::Vector3d origin, Eigen::Vector3d ray
 {
 	Eigen::Vector3d point = origin + ray*length;
 	float pointValue = voxelGrid.getValueAtPoint(point);
+	float previousPointValue = pointValue;
 
 	double stepSize = voxelGrid.voxelSize * stepSizeVoxel;
 	double previousLength = length;
 
-	while (pointValue > 0.0f)
+	while (true)
 	{
 		length += stepSize;
 		point = origin + ray*length;
 
 		if (not voxelGrid.withinGrid(point)) { return false; }
 
+		previousPointValue = pointValue;
 		pointValue = voxelGrid.getValueAtPoint(point);
+
+		if (previousPointValue > 0.0 and pointValue < 0.0) { break; }
 	}
 
 	while(true)
