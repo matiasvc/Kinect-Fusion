@@ -41,7 +41,7 @@ bool  VoxelGrid::withinGrid(Eigen::Vector3d point)
 
 
 Eigen::Vector3d VoxelGrid::getPointAtIndex(Eigen::Vector3i index){
-	Eigen::Vector3d point = index.cast<double>()*(resolution-1);
+	Eigen::Vector3d point = index.cast<double>()/(double(resolution-1));
 	point = point*size;
     //todo: fix half voxel error
 	return point;
