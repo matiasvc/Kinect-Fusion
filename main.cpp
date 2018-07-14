@@ -21,7 +21,7 @@
 int main (int argc, char* argv[])
 {
     // INIT CAMERA
-    std::string filenameIn = "/home/opeide/TUM/3D scanning/Kinect-Fusion/data/rgbd_dataset_freiburg1_xyz/";
+	std::string filenameIn = "/Users/matiasvc/Downloads/rgbd_dataset_freiburg1_xyz/";
     std::cout << "Initialize virtual sensor..." << std::endl;
     VirtualSensor sensor;
     if (!sensor.Init(filenameIn))
