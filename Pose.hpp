@@ -12,7 +12,10 @@ public:
 	Eigen::Vector3d translation;
 
 	Eigen::Vector3d transformPoint(Eigen::Vector3d point);
-	Eigen::Vector3d transformVector(Eigen::Vector3d vector);
+	Eigen::Vector3d transformVector(Eigen::Vector3d translationVector);
+
+	void translate(Eigen::Vector3d translate);
+	void rotateEuler(Eigen::Vector3d eulerAngles);
 
 	static Pose PoseFromEuler(Eigen::Vector3d eulerAngles, Eigen::Vector3d translation);
 private:

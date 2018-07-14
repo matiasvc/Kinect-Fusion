@@ -18,6 +18,23 @@ Eigen::Vector3d Pose::transformVector(Eigen::Vector3d vector)
 	return orientation*vector;
 }
 
+void Pose::translate(Eigen::Vector3d translationVector)
+{
+	translation += orientation * translationVector;
+}
+
+void Pose::rotateEuler(Eigen::Vector3d eulerAngles)
+{
+	Eigen::Quaterniond q;
+	q = Eigen::AngleAxisd(eulerAngles.x(), Eigen::Vector3d::UnitX()) *
+	    Eigen::AngleAxisd(eulerAngles.y(), Eigen::Vector3d::UnitY()) *
+	    Eigen::AngleAxisd(eulerAngles.z(), Eigen::Vector3d::UnitZ());
+
+	Eigen::Matrix3d rot = q.matrix();
+
+	orientation = orientation * rot;
+}
+
 Pose Pose::PoseFromEuler(Eigen::Vector3d eulerAngles, Eigen::Vector3d translation)
 {
 	Eigen::Quaterniond q;
