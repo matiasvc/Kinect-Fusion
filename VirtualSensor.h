@@ -15,7 +15,7 @@ class VirtualSensor
 {
 public:
 
-	VirtualSensor() : m_currentIdx(-1), m_increment(10)
+	VirtualSensor() : m_currentIdx(-1), m_increment(1)
 	{
 
 	}
@@ -26,7 +26,7 @@ public:
 		SAFE_DELETE_ARRAY(m_colorFrame);
 	}
 
-	bool Init(const std::string& datasetDir)
+	bool init(const std::string& datasetDir)
 	{
 		m_baseDir = datasetDir;
 
@@ -66,7 +66,7 @@ public:
 		return true;
 	}
 
-	bool ProcessNextFrame()
+	bool processNextFrame()
 	{
 		if (m_currentIdx == -1)	m_currentIdx = 0;
 		else m_currentIdx += m_increment;
@@ -110,66 +110,66 @@ public:
 		return true;
 	}
 
-	unsigned int GetCurrentFrameCnt()
+	unsigned int getCurrentFrameCnt()
 	{
 		return (unsigned int)m_currentIdx;
 	}
 
 	// get current color data
-	BYTE* GetColorRGBX()
+	BYTE* getColorRGBX()
 	{
 		return m_colorFrame;
 	}
 	// get current depth data
-	float* GetDepth()
+	float* getDepth()
 	{
 		return m_depthFrame;
 	}
 
 	// color camera info
-	Eigen::Matrix3f GetColorIntrinsics()
+	Eigen::Matrix3f getColorIntrinsics()
 	{
 		return m_colorIntrinsics;
 	}
 
-	Eigen::Matrix4f GetColorExtrinsics()
+	Eigen::Matrix4f getColorExtrinsics()
 	{
 		return m_colorExtrinsics;
 	}
 
-	unsigned int GetColorImageWidth()
+	unsigned int getColorImageWidth()
 	{
 		return m_colorImageWidth;
 	}
 
-	unsigned int GetColorImageHeight()
+	unsigned int getColorImageHeight()
 	{
 		return m_colorImageHeight;
 	}
 
 	// depth (ir) camera info
-	Eigen::Matrix3f GetDepthIntrinsics()
+	Eigen::Matrix3f getDepthIntrinsics()
 	{
 		return m_depthIntrinsics;
 	}
 
-	Eigen::Matrix4f GetDepthExtrinsics()
+	Eigen::Matrix4f getDepthExtrinsics()
 	{
 		return m_depthExtrinsics;
 	}
 
-	unsigned int GetDepthImageWidth()
+	unsigned int getDepthImageWidth()
 	{
 		return m_colorImageWidth;
 	}
 
-	unsigned int GetDepthImageHeight()
+	unsigned int getDepthImageHeight()
 	{
 		return m_colorImageHeight;
 	}
 
 	// get current trajectory transformation
-	Eigen::Matrix4f GetTrajectory()
+	Eigen::Matrix4f getTrajectory()
 	{
 		return m_currentTrajectory;
 	}

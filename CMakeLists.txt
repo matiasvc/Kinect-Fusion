@@ -11,8 +11,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # Eigen3
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
-set(OpenCV_DIR /opt/ros/kinetic/share/OpenCV-3.3.1-dev)
-
 # OpenCV
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -35,13 +33,21 @@ set(
 	SimpleMesh.h
 	PointCloud.h
 	KinectOptimizer.h
-	VirtualSensor.h)
+	VirtualSensor.h
+	FreeImageHelper.h 
+	ModelReconstructor.hpp 
+	Raytracer.hpp
+	Eigen.h)
 
 # Set source files
 set(
 	SOURCE_FILES 
 	main.cpp
-	FreeImageHelper.cpp)
+	FreeImageHelper.cpp
+	ModelReconstructor.cpp
+	VoxelGrid.cpp
+	Raytracer.cpp
+	Pose.cpp)
 
 # executable files
 add_executable(Kinect-Fusion ${SOURCE_FILES} ${HEADER_FILES})

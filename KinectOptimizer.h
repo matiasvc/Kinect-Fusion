@@ -225,8 +225,8 @@ class KinectFusionOptimizer {
 public:
 	KinectFusionOptimizer() :
 		m_nIterations{ 20 },
-		m_distThreshold{ 0.07f },
-		m_angleThreshold{ 0.866025f },
+		m_distThreshold{ 0.2f }, // 0.07f
+		m_angleThreshold{ 0.6f }, // 0.866025f
 		m_nIterationsPyramid{ std::vector<int>{10,5,4} },
 		m_oldPose{ Matrix4f::Identity() }
 	{ }
