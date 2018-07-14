@@ -16,6 +16,7 @@ bool searchRay(VoxelGrid& voxelGrid, Eigen::Vector3d origin, Eigen::Vector3d ray
 
 	while (true)
 	{
+		previousLength = length;
 		length += stepSize;
 		point = origin + ray*length;
 

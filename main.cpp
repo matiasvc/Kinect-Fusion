@@ -93,6 +93,7 @@ int main (int argc, char* argv[])
         Pose camPose = Pose::PoseFromEuler(camEuler, camPos);
         raytraceImage(grid, camPose, K, resolutionWidth, resolutionHeight,
                       6.0, 1e-3, depthImage, normalMap);
+                      3.0, 1e-3, depthImage, normalMap);
 
         double min, max;
         cv::minMaxLoc(depthImage, &min, &max);
