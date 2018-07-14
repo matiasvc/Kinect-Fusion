@@ -68,6 +68,8 @@ int main (int argc, char* argv[])
     Eigen::Vector3d camPos;
     camPos << 0.0, 0.0, -3.0;
 
+	Pose camPose = Pose::PoseFromEuler(camEuler, camPos);
+
     Eigen::Matrix3d K;
     K << 0.8203125, 0.0,     0.5,
             0.0,       1.09375, 0.5,
@@ -82,7 +84,9 @@ int main (int argc, char* argv[])
     const double posDelta = 0.1;
     const double rotDelta = 0.05;
 
-
+	const Eigen::Vector3d xVector(1,0,0);
+	const Eigen::Vector3d yVector(0,1,0);
+	const Eigen::Vector3d zVector(0,0,1);
 
     VoxelGrid grid = *model.getModel();
     std::cout << "Retrieved model" << std::endl;
@@ -90,10 +94,8 @@ int main (int argc, char* argv[])
     cv::namedWindow("disp window", cv::WINDOW_AUTOSIZE);
     while (cv::waitKey(1) != 27)
     {
-        Pose camPose = Pose::PoseFromEuler(camEuler, camPos);
         raytraceImage(grid, camPose, K, resolutionWidth, resolutionHeight,
                       1.5, 1e-3, depthImage, normalMap);
-
 
         double min, max;
         cv::minMaxLoc(depthImage, &min, &max);
@@ -108,52 +110,52 @@ int main (int argc, char* argv[])
         {
             case 119: // W - Up
             {
-                camPos.y() -= posDelta;
+                camPose.translate(-yVector*posDelta);
             } break;
             case 100: // D - Right
             {
-                camPos.x() += posDelta;
+	            camPose.translate(xVector*posDelta);
             } break;
             case 115: // S - Down
             {
-                camPos.y() += posDelta;
+	            camPose.translate(yVector*posDelta);
             } break;
             case 97: // A - Left
             {
-                camPos.x() -= posDelta;
+	            camPose.translate(-xVector*posDelta);
             } break;
             case 113: // Q - Forewards
             {
-                camPos.z() += posDelta;
+	            camPose.translate(zVector*posDelta);
             } break;
             case 101: // E - Backwards
             {
-                camPos.z() -= posDelta;
+	            camPose.translate(-zVector*posDelta);
             } break;
 
             case 105: // I - X+
             {
-                camEuler.x() += rotDelta;
+                camPose.rotateEuler(xVector*rotDelta);
             } break;
             case 106: // J - Y-
             {
-                camEuler.y() -= rotDelta;
+	            camPose.rotateEuler(-yVector*rotDelta);
             } break;
             case 107: // K - X-
             {
-                camEuler.x() -= rotDelta;
+	            camPose.rotateEuler(-xVector*rotDelta);
             } break;
             case 108: // L - Y+
             {
-                camEuler.y() += rotDelta;
+	            camPose.rotateEuler(yVector*rotDelta);
             } break;
             case 117: // U - Z+
             {
-                camEuler.z() += rotDelta;
+	            camPose.rotateEuler(zVector*rotDelta);
             } break;
             case 111: // O - Z-
             {
-                camEuler.z() -= rotDelta;
+	            camPose.rotateEuler(-zVector*rotDelta);
             } break;
         }
     }
