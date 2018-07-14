@@ -2,11 +2,13 @@
 #define KINECT_FUSION_POSE_HPP
 
 #include <Eigen/Eigen>
+#include <iostream>
 
 class Pose
 {
 public:
 	Pose(Eigen::Matrix3d rotation, Eigen::Vector3d translation);
+	Pose(Eigen::Matrix4d extrinsic);
 
 	Eigen::Matrix3d orientation;
 	Eigen::Vector3d translation;

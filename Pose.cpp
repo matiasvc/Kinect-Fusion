@@ -8,6 +8,15 @@ Pose::Pose(Eigen::Matrix3d orientation, Eigen::Vector3d translation)
 : orientation(orientation), translation(translation)
 {}
 
+Pose::Pose(Eigen::Matrix4d extrinsic){
+
+	orientation = extrinsic.block(0,0,3,3).transpose();
+	translation = extrinsic.col(3).head(3);
+	translation = -orientation*translation;
+	std::cout << "init pose with position " << translation << std::endl;
+}
+
+
 Eigen::Vector3d Pose::transformPoint(Eigen::Vector3d point)
 {
 	return orientation*point + translation;

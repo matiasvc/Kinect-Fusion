@@ -21,7 +21,7 @@
 int main (int argc, char* argv[])
 {
     // INIT CAMERA
-	std::string filenameIn = "/Users/matiasvc/Downloads/rgbd_dataset_freiburg1_xyz/";
+	std::string filenameIn = "/home/opeide/TUM/3D scanning/Kinect-Fusion/data/rgbd_dataset_freiburg1_xyz/";
     std::cout << "Initialize virtual sensor..." << std::endl;
     VirtualSensor sensor;
     if (!sensor.Init(filenameIn))
@@ -36,14 +36,14 @@ int main (int argc, char* argv[])
     Eigen::Vector2i camResolution(depthCols, depthRows);
 
     //INIT TSDF
-	unsigned int resolution = 100; //num voxels in each dimension of TSDF
+	unsigned int resolution = 200; //num voxels in each dimension of TSDF
     double size = 3.0;  //size of model in meters
     float truncationDistance = 0.08;
     ModelReconstructor model(truncationDistance, resolution, size, cameraIntrinsic, camResolution);
 
 
 
-
+    Eigen::Matrix4d camEx0;
     for (int i=0; i<2; ++i){
         //LOAD FRAME
         for (int j=0; j<5; ++j) {
@@ -54,21 +54,26 @@ int main (int argc, char* argv[])
         Eigen::MatrixXd depthMap = depthMapf.cast<double>();
         Eigen::Matrix4d cameraExtrinsic = sensor.GetTrajectory().cast<double>();//Eigen::Matrix4d::Identity(); //
 
+        if (i==0){
+            camEx0 = cameraExtrinsic;
+        }
+
         //FUSE FRAME
         model.fuseFrame(depthMap, cameraExtrinsic);
     }
-    model.writeTSDFToFile("TSDF.csv");
+    //model.writeTSDFToFile("TSDF.csv");
 
 
     //RAYCAST
     std::cout << "Starting raycast" << std::endl;
 
-    Eigen::Vector3d camEuler;
-    camEuler << 0.0, 0.0, 0.00;
-    Eigen::Vector3d camPos;
-    camPos << 0.0, 0.0, -3.0;
+//    Eigen::Vector3d camEuler;
+//    camEuler << 0.0, 0.0, 0.00;
+//    Eigen::Vector3d camPos(camPose0.col(3).head(3));
+//    camPos << 0.0, 0.0, -3.0;
 
-	Pose camPose = Pose::PoseFromEuler(camEuler, camPos);
+	Pose camPose = Pose(camEx0);//Pose::PoseFromEuler(camEuler, camPos);
+
 
     Eigen::Matrix3d K;
     K << 0.8203125, 0.0,     0.5,
