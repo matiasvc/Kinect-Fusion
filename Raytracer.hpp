@@ -7,7 +7,9 @@
 #ifndef KINECT_FUSION_RAYTRACER_HPP
 #define KINECT_FUSION_RAYTRACER_HPP
 
-cv::Mat raytraceImage(VoxelGrid& voxelGrid, Pose cameraPose, Eigen::Matrix3d cameraIntrisic,
-                      unsigned int resolutionWidth, unsigned int resolutionHeight);
+void raytraceImage(VoxelGrid& voxelGrid, Pose cameraPose, Eigen::Matrix3d cameraIntrisic,
+                      unsigned int resolutionWidth, unsigned int resolutionHeight,
+                      const double stepSizeVoxel, const double epsilon,
+                      cv::Mat& depthImage, cv::Mat& normalImage);
 
 #endif //KINECT_FUSION_RAYTRACER_HPP

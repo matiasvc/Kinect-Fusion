@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 3.0)
-project(Kinect-Fusion)
+cmake_minimum_required (VERSION 3.0)
+project (Kinect-Fusion)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11 -O3")
+find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+find_package(OpenCV REQUIRED)
 
-include_directories(${SDL2_INCLUDE_DIRS})
 
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")

@@ -4,43 +4,69 @@
 
 #include "Raytracer.hpp"
 
-bool searchRay(VoxelGrid& voxelGrid, Eigen::Vector3d origin, Eigen::Vector3d ray, double& length)
+bool searchRay(VoxelGrid& voxelGrid, Eigen::Vector3d origin, Eigen::Vector3d ray, double& length,
+               const double stepSizeVoxel, const double epsilon)
 {
 	Eigen::Vector3d point = origin + ray*length;
 	float pointValue = voxelGrid.getValueAtPoint(point);
-	double voxelSize = voxelGrid.size/voxelGrid.resolution;
+	float previousPointValue = pointValue;
 
-	while (pointValue > 0.0f) {
-		length += ((double)pointValue);
-		//length += 0.05;
+	double stepSize = voxelGrid.voxelSize * stepSizeVoxel;
+	double previousLength = length;
+
+	while (true)
+	{
+		previousLength = length;
+		length += stepSize;
 		point = origin + ray*length;
 
 		if (not voxelGrid.withinGrid(point)) { return false; }
 
+		previousPointValue = pointValue;
 		pointValue = voxelGrid.getValueAtPoint(point);
+
+		if (previousPointValue > 0.0 and pointValue < 0.0) { break; }
 	}
+
+	while(true)
+	{
+		double middleLength = (previousLength + length)/2;
+		float middleValue = voxelGrid.getValueAtPoint(origin + ray*middleLength);
+
+		if (middleValue > epsilon)
+		{
+			previousLength = middleLength;
+		}
+		else if (middleValue < -epsilon)
+		{
+			length = middleLength;
+		}
+		else
+		{
+			break;
+		}
+	}
+
 	return true;
 }
 
 
-cv::Mat raytraceImage(VoxelGrid& voxelGrid, Pose cameraPose, Eigen::Matrix3d cameraIntrisic,
-                      const unsigned int resolutionWidth, const unsigned int resolutionHeight)
+void raytraceImage(VoxelGrid& voxelGrid, Pose cameraPose, Eigen::Matrix3d cameraIntrisic,
+                      const unsigned int resolutionWidth, const unsigned int resolutionHeight,
+                      const double stepSizeVoxel, const double epsilon,
+                      cv::Mat& depthImage, cv::Mat& normalImage)
 {
 	cv::Mat image = cv::Mat::zeros(resolutionHeight, resolutionWidth, CV_32F);
 
 	double fx = cameraIntrisic(0, 0)*resolutionWidth;
 	double fy = cameraIntrisic(1, 1)*resolutionHeight;
-	double cx = cameraIntrisic(0, 2)*resolutionWidth;
-	double cy = cameraIntrisic(1, 2)*resolutionHeight;
+	double cx = cameraIntrisic(0, 2)*resolutionWidth - 0.5;
+	double cy = cameraIntrisic(1, 2)*resolutionHeight - 0.5;
 
 	Eigen::Vector3d origin = cameraPose.translation;
 
-//	int u = 400;
-//	int v = 800;
-
 	for (int v = 0; v < resolutionHeight; ++v)
 	{
-		std::cout << v << std::endl;
 		for (int u = 0; u < resolutionWidth; ++u)
 		{
 			double rayX = ((double)u - cx)/fx;
@@ -49,25 +75,47 @@ cv::Mat raytraceImage(VoxelGrid& voxelGrid, Pose cameraPose, Eigen::Matrix3d cam
 			ray.normalize();
 
 			ray = cameraPose.transformVector(ray);
-
+			cv::Vec3f normal;
 			double length;
 
-
 			if (voxelGrid.projectRayToVoxelPoint(origin, ray, length) and // Does the ray hit the voxel grid
-			    searchRay(voxelGrid, origin, ray, length)) // Does the ray hit a zero crossing
+			    searchRay(voxelGrid, origin, ray, length, stepSizeVoxel, epsilon)) // Does the ray hit a zero crossing
 			{
-				image.at<float>(u, v) = (float)length;
+				depthImage.at<float>(v, u) = (float)length;
+
+				Eigen::Vector3d point = origin + ray*length;
+
+				const double voxelSize = voxelGrid.voxelSize;
+
+				float valueXForward = voxelGrid.getValueAtPoint(point + Eigen::Vector3d(voxelSize, 0, 0));
+				float valueXBackward = voxelGrid.getValueAtPoint(point + Eigen::Vector3d(-voxelSize, 0, 0));
+
+				float valueYForward = voxelGrid.getValueAtPoint(point + Eigen::Vector3d(0, voxelSize, 0));
+				float valueYBackward = voxelGrid.getValueAtPoint(point + Eigen::Vector3d(0, -voxelSize, 0));
+
+				float valueZForward = voxelGrid.getValueAtPoint(point + Eigen::Vector3d(0, 0, voxelSize));
+				float valueZBackward = voxelGrid.getValueAtPoint(point + Eigen::Vector3d(0, 0, -voxelSize));
+
+				Eigen::Vector3d normalVec(
+						(valueXForward - valueXBackward)/2,
+						(valueYForward - valueYBackward)/2,
+						(valueZForward - valueZBackward)/2
+				);
+				normalVec = cameraPose.orientation.transpose()*normalVec;
+				normalVec.normalize();
+
+				normal(0) = (float)normalVec.x();
+				normal(1) = (float)normalVec.y();
+				normal(2) = (float)normalVec.z();
+
+				normalImage.at<cv::Vec3f>(v, u) = normal;
 			}
 			else
 			{
-				image.at<float>(u, v) = 0.0f;
+				//depthImage.at<float>(u, v) = std::numeric_limits<float>::infinity();
+				depthImage.at<float>(v, u) = 0.0f;
+				normalImage.at<cv::Vec3f>(v, u) = normal;
 			}
 		}
 	}
-
-	double min, max;
-	cv::minMaxLoc(image, &min, &max);
-	image = image * (1/max);
-
-	return image;
 }

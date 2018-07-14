@@ -5,9 +5,10 @@
 #include <iostream>
 
 VoxelGrid::VoxelGrid(unsigned int resolution, double size)
-: resolution(resolution), size(size)
+: resolution(resolution), size(size), voxelSize(size/resolution)
 {
-	voxelData = new float[resolution*resolution*resolution];
+    numElements = resolution*resolution*resolution;
+	voxelData = new float[numElements];
 }
 
 VoxelGrid::~VoxelGrid()
@@ -29,14 +30,24 @@ void VoxelGrid::setValue(unsigned int x, unsigned int y, unsigned int z, float v
 
 bool  VoxelGrid::withinGrid(Eigen::Vector3d point)
 {
-	double x = point.x();
-	double y = point.y();
-	double z = point.z();
+    double x = point.x();
+    double y = point.y();
+    double z = point.z();
 
-	return x >= 0 and x <= size and
-	       y >= 0 and y <= size and
-	       z >= 0 and z <= size;
+    return x >= 0 and x <= size and
+           y >= 0 and y <= size and
+           z >= 0 and z <= size;
 }
+
+
+Eigen::Vector3d VoxelGrid::getPointAtIndex(Eigen::Vector3i index){
+	Eigen::Vector3d point = index.cast<double>()/(double(resolution-1));
+	point = point*size;
+    //todo: fix half voxel error
+	return point;
+}
+
+
 
 float VoxelGrid::getValueAtPoint(Eigen::Vector3d point)
 {
@@ -84,6 +95,51 @@ float VoxelGrid::getValueAtPoint(Eigen::Vector3d point)
 	float c1 = c01*(1 - yd) + c11*yd;
 
 	return c0*(1 - zd) + c1*zd;
+}
+
+
+void VoxelGrid::setAllValues(float val) {
+	for (int i=0; i<numElements; ++i){
+		voxelData[i] = val;
+	}
+}
+
+void VoxelGrid::operator= (const VoxelGrid& rhs){
+    for(int i=0; i<numElements; ++i){
+        voxelData[i] = rhs.voxelData[i];
+    }
+}
+
+VoxelGrid VoxelGrid::operator+ (const VoxelGrid &rhs)
+{
+    VoxelGrid summed = VoxelGrid(resolution, size);
+    for(int i=0; i<numElements; ++i){
+        summed.voxelData[i] = voxelData[i] + rhs.voxelData[i];
+    }
+    return summed;
+}
+
+VoxelGrid VoxelGrid::operator*(const VoxelGrid & rhs)
+{
+    VoxelGrid elemProd = VoxelGrid(resolution, size);
+    for(int i=0; i<numElements; ++i){
+        elemProd.voxelData[i] = voxelData[i] * rhs.voxelData[i];
+    }
+    return elemProd;
+}
+
+VoxelGrid VoxelGrid::operator/(const VoxelGrid & rhs)
+{
+    float defaultValue = 1.0;
+    VoxelGrid elemDiv = VoxelGrid(resolution, size);
+    for(int i=0; i<numElements; ++i){
+        if (rhs.voxelData[i]==0){
+            elemDiv.voxelData[i] = defaultValue;
+        }else{
+            elemDiv.voxelData[i] = voxelData[i] / rhs.voxelData[i];
+        }
+    }
+    return elemDiv;
 }
 
 bool VoxelGrid::projectRayToVoxelPoint(Eigen::Vector3d origin, Eigen::Vector3d direction, double& length)
