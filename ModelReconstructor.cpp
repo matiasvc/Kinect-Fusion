@@ -53,7 +53,7 @@ void ModelReconstructor::writeTSDFToFile(std::string fileName){
 void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d cameraExtrinsic, VoxelGrid* TSDF, VoxelGrid* weights)
 {
     weights->setAllValues(0);
-    TSDF->setAllValues(-1.0f);
+    TSDF->setAllValues(1.0f);
 
 
     //Eigen::Matrix4d cameraPoseInv = cameraPose.inverse();

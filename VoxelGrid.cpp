@@ -130,10 +130,11 @@ VoxelGrid VoxelGrid::operator*(const VoxelGrid & rhs)
 
 VoxelGrid VoxelGrid::operator/(const VoxelGrid & rhs)
 {
+    float defaultValue = 1.0;
     VoxelGrid elemDiv = VoxelGrid(resolution, size);
     for(int i=0; i<numElements; ++i){
         if (rhs.voxelData[i]==0){
-            elemDiv.voxelData[i] = -1;
+            elemDiv.voxelData[i] = defaultValue;
         }else{
             elemDiv.voxelData[i] = voxelData[i] / rhs.voxelData[i];
         }
