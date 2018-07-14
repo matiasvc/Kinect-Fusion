@@ -40,7 +40,7 @@ int kinectFusion_v4() {
 	Eigen::Vector2i camResolution(depthCols, depthRows);
 
 	//INIT TSDF
-	unsigned int resolution = 200; //num voxels in each dimension of TSDF
+	unsigned int resolution = 300; //num voxels in each dimension of TSDF
 	double size = 3.0;  //size of model in meters
 	float truncationDistance = 0.08;
 	ModelReconstructor model(truncationDistance, resolution, size, cameraIntrinsic, camResolution);
@@ -63,8 +63,8 @@ int kinectFusion_v4() {
 	cv::Mat normalMap = cv::Mat::zeros(sensor.getDepthImageHeight(), sensor.getDepthImageWidth(), CV_32FC3);
 
 	const Matrix4f zeroPose = sensor.getTrajectory(); // Matrix4f::Identity() in case of an unknown dataset
-	Matrix4f currentCameraToWorld = zeroPose.inverse();
-	Matrix4d currentCameraPose = Matrix4d::Identity(); //sensor.getTrajectory().cast<double>();
+	Matrix4f currentCameraToWorld = zeroPose.inverse(); //Matrix4f::Identity(); //zeroPose.inverse();
+	Matrix4d currentCameraPose = currentCameraToWorld.inverse().cast<double>(); //sensor.getTrajectory().cast<double>();
 	float* depthMapArr = sensor.getDepth();
 	Eigen::MatrixXd depthMap = Eigen::Map< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> >(depthMapArr, depthRows, depthCols).cast<double>();
 
@@ -84,18 +84,22 @@ int kinectFusion_v4() {
     std::vector<float> prev_depthArray;
     if (depthImage.isContinuous()) {
         prev_depthArray.assign((float*)depthImage.datastart, (float*)depthImage.dataend);
+        std::cout << "Yes it is continuous!" << std::endl;
     } else {
         for (int i = 0; i < depthImage.rows; ++i) {
             prev_depthArray.insert(prev_depthArray.end(), depthImage.ptr<float>(i), depthImage.ptr<float>(i)+depthImage.cols);
         }
     }
 
-    for(int iii = 0; iii <  sensor.getDepthImageWidth()*sensor.getDepthImageHeight(); iii++)
+   /* for(int iii = 0; iii <  sensor.getDepthImageWidth()*sensor.getDepthImageHeight(); iii++)
     {
         int row = iii/sensor.getDepthImageWidth();
         int col = iii%sensor.getDepthImageWidth();
         std::cout<< "Original value: "<< sensor.getDepth()[iii] << " opencv value :" <<  depthImage.at<float>(row, col) << "Vectorized value: "<< prev_depthArray[iii] << std::endl;
-    }
+    }*/
+
+    prev_depthMap = depthImage.ptr<float>(0);
+
 	if ( sensor.getDepthImageWidth() % (int)pow(2, iterNumbers.size()-1) != 0 || sensor.getDepthImageHeight() % (int)pow(2, iterNumbers.size()-1) != 0)
 	{
 		std::cout << "Error: Invalid pyramid level size for the current depth frame!" << std::endl;
@@ -136,7 +140,9 @@ int kinectFusion_v4() {
 		// TODO: MATIAS RAYCAST to prev_depthMap
 
 		Pose curCamPose = Pose(currentCameraPose.cast<double>());//Pose::PoseFromEuler(camEuler, camPos);
-		raytraceImage(*model.getModel(), curCamPose, sensor.getDepthIntrinsics().cast<double>(), sensor.getDepthImageWidth(), sensor.getDepthImageHeight(), 1.5, 1e-3, depthImage, normalMap);
+		raytraceImage(*model.getModel(), curCamPose, normalized_Intrinsics,
+                      sensor.getDepthImageWidth(), sensor.getDepthImageHeight(),
+                      1.5, 1e-3, depthImage, normalMap);
 		prev_depthMap = depthImage.ptr<float>(0);
 
 		i++;

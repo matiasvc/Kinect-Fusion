@@ -83,6 +83,11 @@ void raytraceImage(VoxelGrid& voxelGrid, Pose cameraPose, Eigen::Matrix3d camera
 			{
 				depthImage.at<float>(v, u) = (float)length;
 
+                if(depthImage.at<float>(v, u) == 0.0f)
+                    std::cout << "Invalid depth value at: (" << v <<" , " << u <<") will exit now!\n";
+               assert(depthImage.at<float>(v, u) != 0.0f);
+
+
 				Eigen::Vector3d point = origin + ray*length;
 
 				const double voxelSize = voxelGrid.voxelSize;
@@ -112,10 +117,10 @@ void raytraceImage(VoxelGrid& voxelGrid, Pose cameraPose, Eigen::Matrix3d camera
 			}
 			else
 			{
-				//depthImage.at<float>(u, v) = -std::numeric_limits<float>::infinity();
-				depthImage.at<float>(v, u) = 0.0f;
-				normalImage.at<cv::Vec3f>(v, u) = normal;
-                //normalImage.at<cv::Vec3f>(v, u) = cv::Vec3f(-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity());
+				depthImage.at<float>(u, v) = -std::numeric_limits<float>::infinity();
+				//depthImage.at<float>(v, u) = 0.0f;
+				//normalImage.at<cv::Vec3f>(v, u) = normal;
+                normalImage.at<cv::Vec3f>(v, u) = cv::Vec3f(-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity());
             }
 		}
 	}
