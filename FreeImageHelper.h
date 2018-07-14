@@ -14,64 +14,64 @@
 
 struct FreeImage {
 
-    FreeImage();
-    FreeImage(unsigned int width, unsigned int height, unsigned int nChannels = 4);
-    FreeImage(const FreeImage& img);
-    FreeImage(const std::string& filename);
+	FreeImage();
+	FreeImage(unsigned int width, unsigned int height, unsigned int nChannels = 4);
+	FreeImage(const FreeImage& img);
+	FreeImage(const std::string& filename);
 
-    ~FreeImage();
+	~FreeImage();
 
-    void operator=(const FreeImage& other);
+	void operator=(const FreeImage& other);
 
-    void SetDimensions(unsigned int width, unsigned int height, unsigned int nChannels = 4);
+	void SetDimensions(unsigned int width, unsigned int height, unsigned int nChannels = 4);
 
-    FreeImage ConvertToIntensity() const;
+	FreeImage ConvertToIntensity() const;
 
-    bool LoadImageFromFile(const std::string& filename, unsigned int width = 0, unsigned int height = 0);
+	bool LoadImageFromFile(const std::string& filename, unsigned int width = 0, unsigned int height = 0);
 
-    bool SaveImageToFile(const std::string& filename, bool flipY = false);
+	bool SaveImageToFile(const std::string& filename, bool flipY = false);
 
-    unsigned int w;
-    unsigned int h;
-    unsigned int nChannels;
-    float* data;
+	unsigned int w;
+	unsigned int h;
+	unsigned int nChannels;
+	float* data;
 };
 
 
 struct FreeImageB {
 
-    FreeImageB();
-    FreeImageB(unsigned int width, unsigned int height, unsigned int nChannels = 4);
-    FreeImageB(const FreeImage& img);
-    FreeImageB(const std::string& filename);
+	FreeImageB();
+	FreeImageB(unsigned int width, unsigned int height, unsigned int nChannels = 4);
+	FreeImageB(const FreeImage& img);
+	FreeImageB(const std::string& filename);
 
-    ~FreeImageB();
+	~FreeImageB();
 
-    void operator=(const FreeImageB& other);
+	void operator=(const FreeImageB& other);
 
-    void SetDimensions(unsigned int width, unsigned int height, unsigned int nChannels = 4);
+	void SetDimensions(unsigned int width, unsigned int height, unsigned int nChannels = 4);
 
-    bool LoadImageFromFile(const std::string& filename, unsigned int width = 0, unsigned int height = 0);
+	bool LoadImageFromFile(const std::string& filename, unsigned int width = 0, unsigned int height = 0);
 
-    bool SaveImageToFile(const std::string& filename, bool flipY = false);
+	bool SaveImageToFile(const std::string& filename, bool flipY = false);
 
-    unsigned int w;
-    unsigned int h;
-    unsigned int nChannels;
-    BYTE* data;
+	unsigned int w;
+	unsigned int h;
+	unsigned int nChannels;
+	BYTE* data;
 };
 
 struct FreeImageU16F {
 
-    FreeImageU16F();
-    FreeImageU16F(const std::string& filename);
+	FreeImageU16F();
+	FreeImageU16F(const std::string& filename);
 
-    ~FreeImageU16F();
+	~FreeImageU16F();
 
-    bool LoadImageFromFile(const std::string& filename, unsigned int width = 0, unsigned int height = 0);
+	bool LoadImageFromFile(const std::string& filename, unsigned int width = 0, unsigned int height = 0);
 
-    unsigned int w;
-    unsigned int h;
-    unsigned int nChannels;
-    float* data;
+	unsigned int w;
+	unsigned int h;
+	unsigned int nChannels;
+	float* data;
 };
