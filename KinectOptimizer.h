@@ -822,7 +822,7 @@ public:
 									Vector3f curNrm = estimatedPose.block(0, 0, 3, 3)*source.getRawNormals()[px_idx];
 									const float nrmAngl = curNrm.dot(tempNrm);
 
-									if (nrmAngl < 0.866025f)	// 0.707107 = cos(45)=sin(45), 0.866025 = cos(30)
+									if (nrmAngl < angleThres)	// 0.707107 = cos(45)=sin(45), 0.866025 = cos(30)
 									{
 										matches[k].idx = -1;	// No need to set weight as this will be discarded anyways
 										cnt--;
