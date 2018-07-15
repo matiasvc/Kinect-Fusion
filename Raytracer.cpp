@@ -72,7 +72,7 @@ void raytraceImage(VoxelGrid& voxelGrid, Pose cameraPose, Eigen::Matrix3d camera
 			double rayX = ((double)u - cx)/fx;
 			double rayY = ((double)v - cy)/fy;
 			Eigen::Vector3d ray(rayX, rayY, 1);
-			ray.normalize();
+			//ray.normalize();
 
 			ray = cameraPose.transformVector(ray);
 			cv::Vec3f normal;

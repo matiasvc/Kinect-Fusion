@@ -224,9 +224,9 @@ protected:
 class KinectFusionOptimizer {
 public:
 	KinectFusionOptimizer() :
-		m_nIterations{ 20 },
-		m_distThreshold{ 0.2f }, // 0.07f
-		m_angleThreshold{ 0.6f }, // 0.866025f
+		m_nIterations{ 20 },    // Only important if you call the optimization without estimatePoseInPyramid (Better call estimatePoseInPyramid)
+		m_distThreshold{ 0.8f }, // Threshold on distance between projective associated points [m]
+		m_angleThreshold{ 0.866025f }, // 0.866025f(60o) Threshold on angle between projective associated points' normal [rad]
 		m_nIterationsPyramid{ std::vector<int>{10,5,4} },
 		m_oldPose{ Matrix4f::Identity() }
 	{ }
@@ -252,8 +252,7 @@ public:
 	}
 
 	const double calcError(const MatrixXd& sourcePoints, const MatrixXd& targetPoints, const MatrixXd& targetNormals, const VectorXd& weights, const unsigned int& size, const VectorXd& deltaX) {
-
-		//std::cout << "Will solve the constraints now..\n";
+		// This function returns the error for the given estimate of the pose increment(delta X)
 
 		VectorXd err(size);
 		const Vector3d r = deltaX.segment(0, 3);
@@ -268,7 +267,7 @@ public:
 		}
 		//#pragma omp barrier  
 
-		return err.squaredNorm() / (double)size;;
+		return err.squaredNorm() / (double)size;
 	}
 
 	Matrix4f estimatePose(const PointCloud& source, float* previousDepthMap, const std::vector<Vector3f>& previousNormalMap, VirtualSensor& sensor, const Matrix4f & oldPose = Matrix4f::Identity()) {
@@ -701,7 +700,6 @@ public:
 	Matrix4f estimatePose_v3(const PointCloud& source, float* previousDepthMap, const std::vector<Vector3f>& previousNormalMap, const Matrix3f &depthIntrinsics, const Matrix4f &depthExtrinsics,
 		const unsigned int &dWidth, const unsigned int &dHeight, const Matrix4f & currentEstimate, const unsigned int& numIters, const bool& analyticJacobian, const Matrix4f & oldPose = Matrix4f::Identity()) {
 		// The initial estimate can be given as an argument.
-		//Matrix4f estimatedPose = Matrix4f::Identity();	// INFO: Normally this should be true ???
 		Matrix4f estimatedPose = currentEstimate;
 
 		// We optimize on the transformation in SE3 notation: 3 parameters for the axis-angle vector of the rotation (its length presents
@@ -711,14 +709,13 @@ public:
 
 		// Rotate old normals into the global frame N_g,k-1
 		auto rotatedNormals = rotatePoints(previousNormalMap, oldPose.block(0, 0, 3, 3));
-		//auto rotatedNormals = previousNormalMap;
 
 
 #ifdef LOG_INFO
 		std::cout << "Transformed normals from previous frame into the global frame ..." << std::endl;
 #endif
 
-		const float distThres = m_distThreshold;		// 7 cm - Threshold on distance
+		const float distThres = m_distThreshold;    // 7 cm - Threshold on distance
 		const float angleThres = m_angleThreshold; // 0.866025f;	// 0.866025 = cos(30), 0.707107 = cos(45) - Threshold between normals
 
 		float fovX = depthIntrinsics(0, 0);
@@ -731,7 +728,7 @@ public:
 
 		double curError = std::numeric_limits<double>::infinity();
 		double prevError;
-		double lambda = 0.7;
+		double lambda = 0.7;        // Used during the Levenberg-Marquardt: H = H + lambda*diag(H)
 
 		for (int i = 0; i < numIters; ++i) {
 			// Compute the matches.
@@ -841,10 +838,13 @@ public:
 				k++;
 			}
 
+            // Here projective association is finished
+
 			clock_t end = clock();
 			double elapsedSecs = double(end - begin) / CLOCKS_PER_SEC;
 			std::cout << "Completed in " << elapsedSecs << " seconds." << std::endl;
 
+            // Create the corresponding vectors to be used during optimization
 			MatrixXd srcPts(3, cnt);
 			MatrixXd trgtPts(3, cnt);
 			MatrixXd NrmlPts(3, cnt);
@@ -884,7 +884,6 @@ public:
 				std::cout << "Initial Error: " << prevError << std::endl;
 			}
 
-			// Prepare point-to-point and point-to-plane constraints.
 			if (analyticJacobian)
 				poseIncrement = solveConstraints_v2(srcPts, trgtPts, NrmlPts, weights, cnt, curError, lambda);
 			else
@@ -893,11 +892,7 @@ public:
 			totalJacobianEvalutionTime += double(clock() - end) / CLOCKS_PER_SEC;
 			totalSolvingTime += double(clock() - end) / CLOCKS_PER_SEC;
 
-			/*std::cout << "Current Error: " << curError << std::endl;
-			std::cout << "Pose Increment: \n" << poseIncrement << std::endl;
-			std::cout << "Update Matrix: \n" << toUpdateMatrix(poseIncrement) << std::endl;
-			std::cout << "Estimated Pose: \n" << toUpdateMatrix(poseIncrement) * estimatedPose << std::endl;*/
-
+			// Update the lambda with new values according to the current error value
 			if (curError >= prevError)
 			{
 				//std::cout << "Current error: " << curError << std::endl;
@@ -936,6 +931,7 @@ public:
 	}
 
 	Matrix4f estimatePoseInPyramid(VirtualSensor& sensor, float* previousDepthMap, const Matrix4f & oldPose = Matrix4f::Identity()) {
+        // Estimates the pose in a pyramid
 
 		#ifdef TIMING_INFO
 		clock_t begin = clock();
@@ -964,6 +960,7 @@ public:
 		clock_t buildingPyramid_start = clock();
 		#endif
 
+        // First for every pyramid level downsample the inputs
 		for (int i = 0; i < level; i++)
 		{
 			const unsigned int lvlScale = pow(2, i);
@@ -976,10 +973,12 @@ public:
 				depthPyramid_target.push_back(downScaleDepth_Average(depthPyramid_target.back(), dWidth / temp, dHeight / temp));
 			}
 			else {
+                // In the pyramid level 0 no need to downsample the inputs
 				depthPyramid_source.push_back(std::vector<float>(&(sensor.getDepth()[0]), &(sensor.getDepth()[dWidth*dHeight])));
 				depthPyramid_target.push_back(std::vector<float>(&(previousDepthMap[0]), &(previousDepthMap[dWidth*dHeight])));
 			}
-		
+
+            // Update the intrinsic matrix for the given resolution
 			Matrix3f newIntrinsic = depthIntrinsics / (float)lvlScale;
 			newIntrinsic(8) = 1.0f;
 
@@ -987,7 +986,7 @@ public:
 			PointCloud target{ depthPyramid_target.back().data(), newIntrinsic, depthExtrinsics, dWidth / lvlScale, dHeight / lvlScale };
 			
 			sourcePtsPyramid.push_back(source);
-			normalsPyramid.push_back(target.getRawNormals());
+			normalsPyramid.push_back(target.getRawNormals());   // Since we need to index properly, this returns the full frame with size(depth*width)
 		}
 
 		#ifdef LOG_INFO
@@ -1043,7 +1042,7 @@ public:
 			std::cout << "Pyramid Level:	" << curLevel << std::endl;
 			#endif
 
-
+            // Functions below estimate the pose
 			/*estimatedPose = estimatePose_v2(sourcePtsPyramid.back(), depthPyramid_target.back().data(), normalsPyramid.back(),
 				newIntrinsic, depthExtrinsics, dWidth / lvlScale, dHeight / lvlScale,
 				estimatedPose, iterNum, oldPose);*/
@@ -1080,6 +1079,7 @@ public:
 		return estimatedPose;
 	}
 
+    // The functions below downsample the input frame in half with different strategies and inputs
 	std::vector<float> downScaleDepth_Median(float* depthFrame, const unsigned int& width, const unsigned int& height)
 	{
 		const unsigned int new_width = width / 2;
@@ -1204,6 +1204,7 @@ public:
 
 	Matrix3d toSkewSymm(const Vector3d &pt)
 	{
+        // Returns a skew-symmetric matrix given the input vector
 		Matrix3d result;
 		result << 0, -pt.z(), pt.y(),
 			pt.z(), 0, -pt.x(),
@@ -1236,6 +1237,8 @@ private:
 	}
 
 	std::vector<Vector3f> rotatePoints(const std::vector<Vector3f>& sourcePoints, const Matrix3f& rotation) {
+        // Used for rotating the normals
+
 		std::vector<Vector3f> rotatedPoints;
 		rotatedPoints.reserve(sourcePoints.size());
 
@@ -1296,7 +1299,10 @@ private:
 
 	VectorXd solveConstraints_v2(const MatrixXd& sourcePoints, const MatrixXd& targetPoints, const MatrixXd& targetNormals, const VectorXd& weights, const unsigned int& size, double & error, const double&lambda) {
 
-		//std::cout << "Will solve the constraints now..\n";
+        // Solves the equation system in the form Ax = b where x is the pose increment that we are optimizing for
+        // Analytic Jacobian is used
+        // Uses Levenberg-Marquardt method with the given lambda
+        // Updates the error value  with the current estimate
 
 		MatrixXd A(size, 6);
 
@@ -1340,7 +1346,11 @@ private:
 	}
 
 	VectorXd solveConstraints_Numeric(const MatrixXd& sourcePoints, const MatrixXd& targetPoints, const MatrixXd& targetNormals, const VectorXd& weights, const unsigned int& nPoints, double & error, const double&lambda) {
-	
+        // Solves the equation system in the form Ax = b where x is the pose increment that we are optimizing for
+        // Numeric Jacobian is used
+        // Uses Levenberg-Marquardt method with the given lambda
+        // Updates the error value  with the current estimate
+
 		VectorXd deltaX(6);
 		double epsilon = 1e-9;
 		const unsigned int size = nPoints;
@@ -1420,6 +1430,7 @@ private:
 	}
 
 	const Matrix4f toUpdateMatrix(const VectorXd& poseIncrement) {
+        // Outputs the resulting update matrix from the given pose increment(size:6, 3 rotation + 3 translation)
 		Matrix4f result;
 		result << 1.0, poseIncrement(2), -poseIncrement(1), poseIncrement(3),
 			-poseIncrement(2), 1.0, poseIncrement(0), poseIncrement(4),

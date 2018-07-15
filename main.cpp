@@ -45,14 +45,13 @@ int kinectFusion_v4() {
 	float truncationDistance = 0.08;
 	ModelReconstructor model(truncationDistance, resolution, size, cameraIntrinsic, camResolution);
 
-	// We store a first frame as a reference frame. All next frames are tracked relatively to the first frame.
+	// We store a first frame as an inital frame
 	sensor.processNextFrame();
 
 	// Setup the optimizer.
 	KinectFusionOptimizer optimizer;
 
 	// Setup the optimizer's parameters
-	//optimizer.setNbOfIterations(8);
 	std::vector<int> iterNumbers = std::vector<int>{ 10, 5, 4 };
 	optimizer.setNbOfIterationsInPyramid(iterNumbers); // Bottom Pyramid to Top Pyramid Level = Fine to Corse(left->right)
 
@@ -78,10 +77,13 @@ int kinectFusion_v4() {
 
     raytraceImage(grid, curCamPose, normalized_Intrinsics, sensor.getDepthImageWidth(), sensor.getDepthImageHeight(), 1.5, 1e-3, depthImage, normalMap);
 
-	// Initialize the previous frame variables
+	// Initialize the previous frame variables (Use this if you want to use the depth frame from the camera instead of the model)
 	//std::copy(sensor.getDepth(), sensor.getDepth() + depthFrameSize, prev_depthMap);
 
-    std::vector<float> prev_depthArray;
+    // This function was used if the created depthArray was continous as it is not guaranteed with opencv
+    // However the way this matrix was created and changed doesn't lead to making it not continuous thus
+    // we use a pointer to the underlying data instead
+    /*std::vector<float> prev_depthArray;
     if (depthImage.isContinuous()) {
         prev_depthArray.assign((float*)depthImage.datastart, (float*)depthImage.dataend);
         std::cout << "Yes it is continuous!" << std::endl;
@@ -89,7 +91,7 @@ int kinectFusion_v4() {
         for (int i = 0; i < depthImage.rows; ++i) {
             prev_depthArray.insert(prev_depthArray.end(), depthImage.ptr<float>(i), depthImage.ptr<float>(i)+depthImage.cols);
         }
-    }
+    }*/
 
    /* for(int iii = 0; iii <  sensor.getDepthImageWidth()*sensor.getDepthImageHeight(); iii++)
     {
@@ -98,6 +100,7 @@ int kinectFusion_v4() {
         std::cout<< "Original value: "<< sensor.getDepth()[iii] << " opencv value :" <<  depthImage.at<float>(row, col) << "Vectorized value: "<< prev_depthArray[iii] << std::endl;
     }*/
 
+    // Pointer to the previoud depth frame
     prev_depthMap = depthImage.ptr<float>(0);
 
 	if ( sensor.getDepthImageWidth() % (int)pow(2, iterNumbers.size()-1) != 0 || sensor.getDepthImageHeight() % (int)pow(2, iterNumbers.size()-1) != 0)
@@ -143,6 +146,7 @@ int kinectFusion_v4() {
 		raytraceImage(*model.getModel(), curCamPose, normalized_Intrinsics,
                       sensor.getDepthImageWidth(), sensor.getDepthImageHeight(),
                       1.5, 1e-3, depthImage, normalMap);
+
 		prev_depthMap = depthImage.ptr<float>(0);
 
 		i++;
