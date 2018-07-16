@@ -33,6 +33,12 @@ bool searchRay(VoxelGrid& voxelGrid, Eigen::Vector3d origin, Eigen::Vector3d ray
 		double middleLength = (previousLength + length)/2;
 		float middleValue = voxelGrid.getValueAtPoint(origin + ray*middleLength);
 
+
+		if (std::abs(length - previousLength) < 1e-3) // FIXME
+		{
+			break;
+		}
+
 		if (middleValue > epsilon)
 		{
 			previousLength = middleLength;
