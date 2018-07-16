@@ -45,6 +45,11 @@ bool searchRay(VoxelGrid& voxelGrid, Eigen::Vector3d origin, Eigen::Vector3d ray
 		{
 			break;
 		}
+
+		if (std::abs(length - previousLength) < 1e-2)
+		{
+			break;
+		}
 	}
 
 	return true;
@@ -56,7 +61,8 @@ void raytraceImage(VoxelGrid& voxelGrid, Pose cameraPose, Eigen::Matrix3d camera
                       const double stepSizeVoxel, const double epsilon,
                       cv::Mat& depthImage, cv::Mat& normalImage)
 {
-	cv::Mat image = cv::Mat::zeros(resolutionHeight, resolutionWidth, CV_32F);
+	depthImage.setTo(cv::Scalar(-std::numeric_limits<float>::infinity()));
+	normalImage.setTo(cv::Vec3f(-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity()));
 
 	double fx = cameraIntrisic(0, 0)*resolutionWidth;
 	double fy = cameraIntrisic(1, 1)*resolutionHeight;
