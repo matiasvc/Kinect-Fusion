@@ -123,6 +123,9 @@ void ModelReconstructor::fuseFrame(Eigen::MatrixXd depthMap, Eigen::Matrix4d cam
     *_weights_global = (*_weights_global) + (*weights_local);
     *_TSDF_global = (*_TSDF_global) / (*_weights_global);
 
+    delete [] TSDF_local;
+    delete [] weights_local;
+
     std::cout << "Frame Fused!" << std::endl;
 }
 
