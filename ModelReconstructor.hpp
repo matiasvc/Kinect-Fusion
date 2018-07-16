@@ -24,6 +24,7 @@ public:
                         Eigen::Matrix3d cameraIntrinsic,
                         Eigen::Vector2i camResolution);
 
+	~ModelReconstructor();
     void writeTSDFToFile(std::string fileName);
 
     void fuseFrame(Eigen::MatrixXd depthMap, Eigen::Matrix4d cameraPose);
@@ -31,8 +32,8 @@ public:
     VoxelGrid *getModel();  //reference?
 
 private:
-    VoxelGrid* _TSDF_global;
-    VoxelGrid* _weights_global;
+    VoxelGrid* _TSDF;
+    VoxelGrid* _weights;
 
     float _truncationDistance;
 
@@ -41,7 +42,6 @@ private:
     double _size;
     Eigen::Vector2i _camResolution;
 
-    void reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d cameraPose, VoxelGrid* TSDF, VoxelGrid* weight);
 };
 
 #endif //KINECT_FUSION_TSDF_H

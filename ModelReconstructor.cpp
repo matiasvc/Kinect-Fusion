@@ -11,8 +11,8 @@ ModelReconstructor::ModelReconstructor(float truncationDistance,
                                        double size,
                                        Eigen::Matrix3d cameraIntrinsic,
                                         Eigen::Vector2i camResolution)
-:   _TSDF_global(new VoxelGrid(resolution, size)),
-    _weights_global(new VoxelGrid(resolution, size))
+:   _TSDF(new VoxelGrid(resolution, size)),
+    _weights(new VoxelGrid(resolution, size))
 {
     _truncationDistance = truncationDistance;
     _resolution = resolution;
@@ -20,14 +20,17 @@ ModelReconstructor::ModelReconstructor(float truncationDistance,
     _cameraIntrinsic = cameraIntrinsic;
     _camResolution = camResolution;
 
-    _weights_global->setAllValues(0.0);
-    _TSDF_global->setAllValues(-1.0);
+    _weights->setAllValues(0.0);
+    _TSDF->setAllValues(-1.0);
 }
 
+ModelReconstructor::~ModelReconstructor() {
+    //todo: free voxelgrid and weights
+}
 
 VoxelGrid *ModelReconstructor::getModel()
 {
-    return _TSDF_global;
+    return _TSDF;
 }
 
 
@@ -40,7 +43,7 @@ void ModelReconstructor::writeTSDFToFile(std::string fileName){
     for (unsigned int x = 0; x < _resolution; ++x) {
         for(unsigned int y = 0; y < _resolution; ++y){
             for (unsigned int z = 0; z < _resolution; ++z){
-                file << x << "," << y << "," << z << "," << _TSDF_global->getValue(x, y, z) << "\n";
+                file << x << "," << y << "," << z << "," << _TSDF->getValue(x, y, z) << "\n";
             }
         }
     }
@@ -50,12 +53,9 @@ void ModelReconstructor::writeTSDFToFile(std::string fileName){
 
 
 //Loop over every world point and calculate a truncated signed distance value (TSDF), along with a weight
-void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matrix4d cameraExtrinsic, VoxelGrid* TSDF, VoxelGrid* weights)
+void ModelReconstructor::fuseFrame(Eigen::MatrixXd depthMap, Eigen::Matrix4d cameraExtrinsic)
 {
-    weights->setAllValues(0);
-    TSDF->setAllValues(1.0f);
-
-
+    std::cout << "Fusing Frame... " << std::endl;
     //Eigen::Matrix4d cameraPoseInv = cameraPose.inverse();
     Eigen::Vector3d cameraPoint;
     Eigen::Vector3d pixPointHomo;
@@ -67,7 +67,7 @@ void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matr
 
                 //convert voxel indexes to world coordinates
                 Eigen::Vector4d worldPointHomo;
-                worldPointHomo << TSDF->getPointAtIndex(voxelIndex), 1;
+                worldPointHomo << _TSDF->getPointAtIndex(voxelIndex), 1;
 
                 //transform world point to cam coords
                 cameraPoint = (cameraExtrinsic * worldPointHomo).head(3);
@@ -100,32 +100,14 @@ void ModelReconstructor::reconstruct_local(Eigen::MatrixXd depthMap, Eigen::Matr
                 else{ //too far behind obstacle
                     continue;
                 }
-                TSDF->setValue(xi, yi, zi, TSDF_val);
-                weights->setValue(xi, yi, zi, 1.0);
+                _TSDF->setValue(xi, yi, zi, _TSDF->getValue(xi,yi,zi)*_weights->getValue(xi,yi,zi) + TSDF_val);
+                _weights->setValue(xi, yi, zi, _weights->getValue(xi,yi,zi) + 1.0);
+                _TSDF->setValue(zi,yi,zi, _TSDF->getValue(xi,yi,zi)/_weights->getValue(xi,yi,zi));
             }
         }
     }
-}
-
-
-//todo: update global model voxels directly. Might be more efficient.
-void ModelReconstructor::fuseFrame(Eigen::MatrixXd depthMap, Eigen::Matrix4d cameraExtrinsic)
-{
-    std::cout << "Fusing Frame... " << std::endl;
-
-    //Create TSDF for new frame
-    VoxelGrid *TSDF_local( new VoxelGrid(_resolution, _size));
-    VoxelGrid *weights_local( new VoxelGrid(_resolution, _size));
-    reconstruct_local(depthMap, cameraExtrinsic, TSDF_local, weights_local);
-
-    //update global TSDF and weights using a running average
-    *_TSDF_global = (*_weights_global)*(*_TSDF_global) + (*weights_local)*(*TSDF_local);
-    *_weights_global = (*_weights_global) + (*weights_local);
-    *_TSDF_global = (*_TSDF_global) / (*_weights_global);
-
-    delete [] TSDF_local;
-    delete [] weights_local;
-
     std::cout << "Frame Fused!" << std::endl;
 }
+
+
 
