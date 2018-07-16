@@ -21,7 +21,7 @@ ModelReconstructor::ModelReconstructor(float truncationDistance,
     _camResolution = camResolution;
 
     _weights_global->setAllValues(0.0);
-    _TSDF_global->setAllValues(-1.0);
+    _TSDF_global->setAllValues(1.0);
 }
 
 
