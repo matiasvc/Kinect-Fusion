@@ -110,7 +110,7 @@ int kinectFusion_v4() {
 	}
 
 	int i = 0;
-	const int iMax = 6;
+	const int iMax = 60000;
 	while (i < iMax && sensor.processNextFrame()) {
 
 		std::cout << "Current Frame #: " << i << std::endl;
